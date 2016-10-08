@@ -32,14 +32,17 @@ class Net:
     def __init__(self, name, cellList):
         self.name = name
         self.cellList = cellList[:]
+        self.boundingBox = self.getBoundingBox()
+        self.hpwl = self.getHPWL()
 
     def __str__(self):
         return "Net Name: %s, Cells: %s" % \
                (self.name, ';    '.join(map(str, self.cellList)))
 
     def getBoundingBox(self):
+        bbox = {}
         max_X, max_Y = 0
-        min_X, min_Y = <Insert Max X and Y>
+        min_X, min_Y = < Insert Max X and Y >
         for cell in self.cellList:
             if cell.x > max_X:
                 max_X = cell.x
@@ -50,10 +53,12 @@ class Net:
             if cell.y < min_Y:
                 min_Y = cell.y
 
-        swPt = []
-        nwPt = []
-        sePt = []
-        nePt = []
+        bbox["SW"] = (min_X, min_Y)
+        bbox["NW"] = (min_X, max_Y)
+        bbox["SE"] = (max_X, min_Y)
+        bbox["NE"] = (max_X, max_Y)
+        return bbox
+
 
 def getPlacement():
     cellDict = {}
@@ -71,15 +76,6 @@ def getPlacement():
     fp.close()
 
     return cellDict
-
-def calcLength(cell1, cell2):
-    xDiff = cell2.x - cell1.x
-    yDiff = cell2.y - cell1.y
-    xSquared = math.pow(xDiff, 2)
-    ySquared = math.pow(yDiff, 2)
-    distance = math.sqrt(xSquared + ySquared)
-
-    return distance
 
 
 def getNetlist(cellDictionary):
