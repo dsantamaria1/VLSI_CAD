@@ -41,8 +41,17 @@ class Net:
 
     def getBoundingBox(self):
         bbox = {}
-        max_X, max_Y = 0
-        min_X, min_Y = < Insert Max X and Y >
+        max_X = 0
+        max_Y = 0
+
+        fileName = os.getcwd() + "/benchmarks/FPGA-example1/FPGA-example1.sitemap"
+        fp = open(fileName, "r")
+        line1 = fp.readline()
+        #print line1
+        min_X, min_Y = line1.split(" ")
+        fp.close()
+
+
         for cell in self.cellList:
             if cell.x > max_X:
                 max_X = cell.x
@@ -58,6 +67,26 @@ class Net:
         bbox["SE"] = (max_X, min_Y)
         bbox["NE"] = (max_X, max_Y)
         return bbox
+
+    def getHPWL(self):
+        pt1 = self.boundingBox["SW"]
+        pt2 = self.boundingBox["NW"]
+        height = self.calcLength(pt1, pt2)
+        pt1 = self.boundingBox["SW"]
+        pt2 = self.boundingBox["SE"]
+        width = self.calcLength(pt1, pt2)
+        hpwl = height + width
+        #print "HPWL is %d" % hpwl
+        return hpwl
+
+    def calcLength(self, pt1, pt2):
+        xDiff = pt2[0] - pt1[0]
+        yDiff = pt2[1] - pt1[1]
+        xSquared = math.pow(xDiff, 2)
+        ySquared = math.pow(yDiff, 2)
+        distance = math.sqrt(xSquared + ySquared)
+
+        return distance
 
 
 def getPlacement():
@@ -104,5 +133,11 @@ def getNetlist(cellDictionary):
 
 cellDict = getPlacement()
 netDict = getNetlist(cellDict)
-for k in netDict.keys():
-    print netDict[k]
+# for k in netDict.keys():
+#     print "HPWL is %d \t for %s" % (netDict[k].hpwl, k)
+
+totalWL = 0.0
+for v in netDict.values():
+    totalWL += v.hpwl
+
+print "Total Wirelength is %f" % (totalWL)
