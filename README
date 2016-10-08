@@ -1,0 +1,42 @@
+=========================================================================================================
+                                           Input Files
+=========================================================================================================
+*.sitemap
+    Defines the placement region.
+
+    File format:
+        The first line: <sitemap width> <sitemap height>
+        The other lines: <x coordinate> <y coordinate> <site type>
+
+    There are 5 site types: CLB, DSP, RAM, IO, and INVALID. No cell can be placed on INVALID site.
+
+
+*.nets
+    Defines all nets.
+
+    File format:
+        <net name> <node name 0> <node name 1> ... <node name k>
+
+
+*.pl
+    Defines all nodes.
+
+    File format:
+        <node name> <node type> <x coordinate> <y coordinate> <fixed (F) or movable (M)>
+
+    There are 4 node types: CLB, DSP, RAM, and IO. Cells can only be placed on sites of the same type
+
+=========================================================================================================
+
+
+
+=========================================================================================================
+                                          Evaluation Tool
+=========================================================================================================
+NOTE:
+    Please run 'evaluator' on x86_64 Linux machine.
+    If you found any bugs, please report to wuxi.li@utexas.edu
+
+Usage:
+    evaluator <sitemap file> <nets file> <input placement file> <your placement file>
+

@@ -1,0 +1,95 @@
+import sys, os, math
+from collections import defaultdict
+
+class Cell:
+    def __init__(self, name, x, y, type, fixed):
+        self.name = name
+        self.x = int(x)
+        self.y = int(y)
+        self.type = type
+        if fixed == "F":
+            self.fixed = True
+        else:
+            self.fixed = False
+
+    def __eq__(self, other):
+        if isinstance(other, self.__class__):
+            return self.name == other.name and \
+                   self.type == other.type and \
+                   self.x == other.x and \
+                   self.y == other.y
+        else:
+            return False
+
+    def __str__(self):
+        return "Cell Name: %s, Cell Type: %s, X location: %d, Y location: %d, Fixed: %r" % \
+               (self.name, self.type, self.x, self.y, self.fixed)
+
+
+class Net:
+    def __init__(self, name, cellList):
+        self.name = name
+        self.cellList = cellList[:]
+
+    def __str__(self):
+        return "Net Name: %s, Cells: %s" % \
+               (self.name, ';    '.join(map(str, self.cellList)))
+    # def getBoundingBox(self):
+    #     for
+
+
+def getPlacement():
+    cellDict = {}
+    if len(sys.argv) < 2:
+        print "Using default FPGA-example1.pl file"
+        fileName = os.getcwd() + "/benchmarks/FPGA-example1/FPGA-example1.pl"
+    else:
+        fileName = sys.argv[1]
+
+    fp = open(fileName, "r")
+    for line in fp:
+        line = line.rstrip()
+        name, type, x, y, fixed = line.split(" ")
+        cellDict[name] = Cell(name, x, y, type, fixed)
+    fp.close()
+
+    return cellDict
+
+def calcLength(cell1, cell2):
+    xDiff = cell2.x - cell1.x
+    yDiff = cell2.y - cell1.y
+    xSquared = math.pow(xDiff, 2)
+    ySquared = math.pow(yDiff, 2)
+    distance = math.sqrt(xSquared + ySquared)
+
+    return distance
+
+
+def getNetlist(cellDictionary):
+    netDict = defaultdict(list)
+    if len(sys.argv) < 3:
+        print "Using default FPGA-example.nets file"
+        fileName = os.getcwd() + "/benchmarks/FPGA-example1/FPGA-example1.nets"
+    else:
+        fileName = sys.argv[2]
+
+    fp = open(fileName, "r")
+    for line in fp:
+        line = line.rstrip()
+        cells = line.split(" ")
+        netName = cells.pop(0)
+        newCellList = []
+        for c in cells:
+            cell = cellDictionary[c]
+            newCellList.append(cell)
+
+        netDict[netName] = Net(netName, newCellList[:])
+
+    fp.close()
+    return netDict
+
+
+cellDict = getPlacement()
+netDict = getNetlist(cellDict)
+for k in netDict.keys():
+    print netDict[k]
