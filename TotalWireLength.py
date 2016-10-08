@@ -27,6 +27,8 @@ class Cell:
 
 
 class Net:
+    # attributes: name (Name of Net), cellList (list of cells in net),
+    # boundingBox(4 points corresponding to this net's boundingBox)
     def __init__(self, name, cellList):
         self.name = name
         self.cellList = cellList[:]
@@ -34,9 +36,24 @@ class Net:
     def __str__(self):
         return "Net Name: %s, Cells: %s" % \
                (self.name, ';    '.join(map(str, self.cellList)))
-    # def getBoundingBox(self):
-    #     for
 
+    def getBoundingBox(self):
+        max_X, max_Y = 0
+        min_X, min_Y = <Insert Max X and Y>
+        for cell in self.cellList:
+            if cell.x > max_X:
+                max_X = cell.x
+            if cell.y > max_Y:
+                max_Y = cell.y
+            if cell.x < min_X:
+                min_X = cell.x
+            if cell.y < min_Y:
+                min_Y = cell.y
+
+        swPt = []
+        nwPt = []
+        sePt = []
+        nePt = []
 
 def getPlacement():
     cellDict = {}
