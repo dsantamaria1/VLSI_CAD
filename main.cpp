@@ -1,6 +1,6 @@
 
-#include <string>
 #include <map>
+#include <string>
 #include <vector>
 #include <iostream>
 #include <stdlib.h>
@@ -9,7 +9,8 @@
 #include "Cell.h"
 using namespace std;
 
-std::map<string, Cell> createCellMap(string);
+void createCellMap(string);
+//std::map<string, Cell> createCellMap(string);
 
 int main(int argc, char* argv[]) {
     int opts;
@@ -39,16 +40,21 @@ int main(int argc, char* argv[]) {
                  break;
         }
     } // while (getopt)
-    cellMap = createCellMap(placement);
+
+    createCellMap(placement);
+    //cellMap = createCellMap(placement);
     return 0;
 }
 
-map<string, Cell> createCellMap(string placementFile){
+//map<string, Cell> createCellMap(string placementFile){
+void  createCellMap(string placementFile){
     string line;
-    ifstream cellFile (placementFile);
-
+    ifstream cellFile;
+    cout << placementFile.c_str() <<endl;
+    
+    cellFile.open(placementFile.c_str());
     while (getline(cellFile,line)) {
       std::cout << line << '\n';
     }
-    return map;
+    // return map;
 }
