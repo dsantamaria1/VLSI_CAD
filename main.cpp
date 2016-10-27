@@ -7,12 +7,11 @@
 #include <iostream>
 #include <sstream>
 #include <fstream>
-#include "Cell.h"
-#include <regex>
+#include "Cell.hh"
 using namespace std;
 
 void createCellMap(string);
-//std::map<string, Cell> createCellMap(string);
+//map<string, Cell> createCellMap(string);
 
 int main(int argc, char* argv[]) {
     int opts;
@@ -27,15 +26,15 @@ int main(int argc, char* argv[]) {
         switch (opts){
             case 's':
                  sitemap = optarg;
-                 std::cout << "sitemap chosen: " << sitemap << std::endl;
+                 cout << "sitemap chosen: " << sitemap << endl;
                  break;
             case 'n':
                  netlist = optarg;
-                 std::cout << "netlist chosen: " << netlist << std::endl;
+                 cout << "netlist chosen: " << netlist << endl;
                  break;
             case 'p':
                  placement = optarg;
-                 std::cout << "placement chosen: " << placement << std::endl;
+                 cout << "placement chosen: " << placement << endl;
                  break;
             default:
                  printf("die");
@@ -60,7 +59,10 @@ void  createCellMap(string placementFile){
       istringstream iss(line);
       cout << line << endl;
       if(iss >> cellName >> cellType >> x >> y >> fixed){
-        Cell cell = Cell(cellName, stoi(x), stoi(y), cellType, fixed);
+        int xCoord= atoi(x.c_str());
+        int yCoord= atoi(y.c_str());
+       
+        Cell cell = Cell(cellName, xCoord, yCoord, cellType, fixed);
       }
     }
     // return map;

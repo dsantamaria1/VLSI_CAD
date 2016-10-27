@@ -4,9 +4,6 @@
 using namespace std;
 
 class Cell{
-public:
-  Cell(string name, int x, int y, string type, string fixed);
-  ~Cell(void);
 
 private:
   string name;
@@ -14,4 +11,8 @@ private:
   int y;
   string type;
   string fixed;
+
+public:
+  Cell(string name, int x, int y, string type, string fixed){};
+  virtual ~Cell(){};
 };
