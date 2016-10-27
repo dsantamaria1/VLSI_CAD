@@ -2,11 +2,13 @@
 #include <map>
 #include <string>
 #include <vector>
-#include <iostream>
 #include <stdlib.h>
 #include <getopt.h>
+#include <iostream>
+#include <sstream>
 #include <fstream>
 #include "Cell.h"
+#include <regex>
 using namespace std;
 
 void createCellMap(string);
@@ -49,12 +51,17 @@ int main(int argc, char* argv[]) {
 //map<string, Cell> createCellMap(string placementFile){
 void  createCellMap(string placementFile){
     string line;
+    string cellName, cellType, x, y, fixed;
     ifstream cellFile;
     cout << placementFile.c_str() <<endl;
-    
+
     cellFile.open(placementFile.c_str());
     while (getline(cellFile,line)) {
-      std::cout << line << '\n';
+      istringstream iss(line);
+      cout << line << endl;
+      if(iss >> cellName >> cellType >> x >> y >> fixed){
+        Cell cell = Cell(cellName, stoi(x), stoi(y), cellType, fixed);
+      }
     }
     // return map;
 }

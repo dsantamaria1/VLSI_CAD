@@ -7,9 +7,9 @@ class Cell{
   int x;
   int y;
   string type;
-  bool fixed;
+  string fixed;
 
-  Cell::Cell(string name, int x, int y, string type, bool fixed){
+  Cell::Cell(string name, int x, int y, string type, string fixed){
     this->name = name;
     this->x = x;
     this->y = y;
