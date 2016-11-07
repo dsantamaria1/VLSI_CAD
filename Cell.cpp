@@ -1,6 +1,6 @@
 #include <iostream>
 #include <stdlib.h>
-#include "Cell.hh"
+#include "Cell.h"
 
 class Cell{
   string name;

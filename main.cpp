@@ -7,7 +7,7 @@
 #include <iostream>
 #include <sstream>
 #include <fstream>
-#include "Cell.hh"
+#include "Cell.h"
 using namespace std;
 
 void createCellMap(string);
