@@ -1,7 +1,7 @@
 
 
 main.o: main.cpp
-	g++ $< -o $@
+	g++ -std=c++11 $< -o $@
 
 clean:
 	rm -rf *.o
