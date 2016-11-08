@@ -1,7 +1,6 @@
 #include <string>
 #include <vector>
-#include <memory>
-#include <utility>
+#include <unordered_map>
 
 #include "Placement.h"
 #include "Cell.h"
@@ -11,30 +10,23 @@ using namespace std;
 
 
 Placement::Placement (int rows, int cols, 
-		vector<vector<Site>>& inputSitemap,
-		vector<vector<Cell>>& inputPlacement) {
+		vector<vector<Site>>& inputSitemap) {
 	_rows = rows;
 	_cols = cols;
-	_placement.swap(inputSitemap);
-	
-	for (int r = 0; r < rows; r++) {
-		for (int c = 0; c < cols; c++) {
-			(_placement[r][c]).addCell(inputPlacement[r][c]);
-		}
-	}
+	_placement.swap(inputSitemap);	
 }
+
+void Placement::addCells (int x, int y, unordered_map<string, Cell>* cellMap) {
+	
+}
+
 
 vector<Site> Placement::getRow (int row) {
-	return
+
 }
+
 
 Site Placement::getSite (int row, int col) {
-	return _placement
-}
-
-/*
-void Placement::swapCells (Site site1, Site site2) {
 
 }
-*/
-int main () {}
+
