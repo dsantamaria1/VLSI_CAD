@@ -13,7 +13,7 @@ public:
 	Net (const string& name, const vector<Cell>& cells);
 private:
 	const string _name;
-	vector<Cell*> _cells;	
+	vector<string> _cells;	
 };
 
 #endif
