@@ -11,12 +11,13 @@ Site::Site (int x, int y, const string& type) :
 	_x (x),
 	_y (y),
 	_type (type),
-	_siteCell (nullptr)
+	_cellName ("")
 {}
 
-void Site::addCell (Cell cell) {
-	_siteCell = &cell; 	
+void Site::addCell (string cellName) {
+	_cellName = cellName; 	
 }
+
 
 /*
 int main () {

@@ -12,8 +12,8 @@ class Placement {
 public:
 	Placement (int rows, int cols, vector<vector<Site>>& inputSitemap,
 		vector<vector<Cell>>& inputPlacement);
-	vector<Site*> getSite (int row);
-	Site* getSite (int row, int col);
+	vector<Site> getRow (int row);
+	Site getSite (int row, int col);
 private:
 	int _rows;
 	int _cols;

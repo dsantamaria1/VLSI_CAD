@@ -19,18 +19,22 @@ Placement::Placement (int rows, int cols,
 	
 	for (int r = 0; r < rows; r++) {
 		for (int c = 0; c < cols; c++) {
-			_placement[r][c].addCell(inputPlacement[r][c]);
+			(_placement[r][c]).addCell(inputPlacement[r][c]);
 		}
 	}
 }
 
-vector<Site*> Placement::getRow (int row) {
-
+vector<Site> Placement::getRow (int row) {
+	return
 }
 
-Site* Placement::getSite (int row, int col) {
-
+Site Placement::getSite (int row, int col) {
+	return _placement
 }
 
+/*
+void Placement::swapCells (Site site1, Site site2) {
 
+}
+*/
 int main () {}

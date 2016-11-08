@@ -10,12 +10,12 @@ using namespace std;
 class Site {
 public:
 	Site (int x, int y, const string& type);
-	void addCell (Cell cell);
+	void addCell (string cellName);
 private:
 	const int _x;
 	const int _y;
 	const string _type;
-	Cell* _siteCell;
+	string _cellName;
 };
 
 #endif
