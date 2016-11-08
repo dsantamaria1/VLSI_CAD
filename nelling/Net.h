@@ -10,7 +10,7 @@ using namespace std;
 
 class Net {
 public:
-	Net (const string& name, const vector<Cell>& cells);
+	Net (const string& name, const vector<string> cells);
 private:
 	const string _name;
 	vector<string> _cells;	

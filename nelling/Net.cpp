@@ -4,7 +4,7 @@
 
 using namespace std
 
-Net::Net (const string& _name, const vector<Cell>& _cells) :
+Net::Net (const string& _name, const vector<string>& _cells) :
 	name (_name),
 	cells (_cells)
 {}
