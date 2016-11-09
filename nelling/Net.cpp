@@ -1,10 +1,11 @@
 #include <string>
 #include <vector>
+
 #include "Net.h"
 
-using namespace std
+using namespace std;
 
-Net::Net (const string& _name, const vector<string>& _cells) :
-	name (_name),
-	cells (_cells)
-{}
+Net::Net (string name, vector<string> cells) {
+	_name = name;
+	_cells = cells;
+}

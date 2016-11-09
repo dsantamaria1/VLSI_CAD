@@ -4,15 +4,14 @@
 #include <string>
 #include <vector>
 
-#include "Cell.h"
 
 using namespace std;
 
 class Net {
 public:
-	Net (const string& name, const vector<string> cells);
+	Net (string name, vector<string> cells);
 private:
-	const string _name;
+	string _name;
 	vector<string> _cells;	
 };
 

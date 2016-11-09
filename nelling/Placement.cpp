@@ -22,11 +22,11 @@ void Placement::addCells (int x, int y, unordered_map<string, Cell>* cellMap) {
 
 
 vector<Site> Placement::getRow (int row) {
-
+	return _placement[row];
 }
 
 
 Site Placement::getSite (int row, int col) {
-
+	return _placement[row][col];
 }
 

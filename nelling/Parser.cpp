@@ -1,6 +1,8 @@
 #include <string>
 #include <vector>
 #include <iostream>
+#include <fstream>
+#include <unordered_map>
 #include <boost/algorithm/string.hpp>
 
 #include "Parser.h"
@@ -12,33 +14,35 @@ using namespace std;
 
 
 Parser::Parser(const string& _filepath, const string& _benchmark) {
-	basePath = _filepath + _benchmark;
-	netsPath = basePath + ".nets";
-	plPath = basePath + ".pl";
-	smPath = basePath + ".sitemap"
+	string basePath = _filepath + _benchmark;
+	_netsPath = basePath + ".nets";
+	_plPath = basePath + ".pl";
+	_smPath = basePath + ".sitemap";
 }
+
 
 void Parser::redefine_parser(const string& _filepath, const string& _benchmark) {
-	basePath = _filepath + _benchmark;
-	netsPath = basePath + ".nets";
-	plPath = basePath + ".pl";
-	smPath = basePath + ".sitemap"
+	string basePath = _filepath + _benchmark;
+	_netsPath = basePath + ".nets";
+	_plPath = basePath + ".pl";
+	_smPath = basePath + ".sitemap";
 }
 
-vector<Net> Parser::parse_netlist() {
-	vector<Net> netlist;
+
+unordered_map<string, Net> Parser::parse_netlist() {
+	unordered_map<string, Net> netMap;
 	ifstream file;
 	file.exceptions (std::ifstream::failbit | std::ifstream::badbit);
 	
 	try {
 		string line;
-		file.open(netsPath);
+		file.open(_netsPath);
 		while ( getline(file, line) ) {
 			vector<string> tokens;
-			boost::split(tokens, line, is_any_of(" ")); 
+			boost::split(tokens, line, boost::is_any_of(" ")); 
 			string name = tokens[0];
 			tokens.erase(tokens.begin());
-			netlist.add(Net(name, tokens))	
+			netMap[name] = Net(name, tokens);	
 		}
 		file.close();
 	} 
@@ -46,35 +50,37 @@ vector<Net> Parser::parse_netlist() {
 		cerr << "Exception occured during file handling.";
 	}
 
-	return netlist;	
+	return netMap;	
 }
 
-void Parser::parse_placement() {
-	vector<vector<Cell>> placement;
+/*
+unordered_map<string, Cell> Parser::parse_placement() {
+	unordered_map<string, Cell> cellMap;
 	ifstream file;
 	file.exceptions (std::ifstream::failbit | std::ifstream::badbit);
 	string line;
 	
 	try {
 		vector<string> tokens;
-		file.open(plPath);
+		file.open(_plPath);
 		while ( getline(file, line) ) {
-			boost::split(tokens, line, is_any_of(" "));
+			boost::split(tokens, line, boost::is_any_of(" "));
 			string name = tokens[0];
 			string type = tokens[1];
 			int x = tokens[2];
 			int y = tokens[3];
 			string fixed = tokens[4];
-			cells.add(Cell(name, type, x, y, fixed));
+			cellMap[name] = Cell(name, type, x, y, fixed);
 		}
 		file.close();
 	} 
 	catch (std::ifstream::failure e) {
 		cerr << "Exception occured during file handling";
 
-	return placement;
+	return cellMap;
 }
-
+*/
+/*
 vector<vector<<Site>> Parser::parse_sitemap() {
 	vector<vector<Site>> sitemap;
 	ifstream file;
@@ -86,9 +92,9 @@ vector<vector<<Site>> Parser::parse_sitemap() {
 		int col, rows, x, y;
 		string type;
 		
-		file.open(smPath);
+		file.open(_smPath);
 		getline(file, line);
-		boost::split(tokens, line, is_any_of(" "));
+		boost::split(tokens, line, boost::is_any_of(" "));
 		col = tokens[0];
 		rows = tokens[1];
 		
@@ -96,11 +102,11 @@ vector<vector<<Site>> Parser::parse_sitemap() {
 		for (int r = 0; r < rows; r++) {
 
 			for (int c = 0; c < cols; c++) {
-				boost::split(tokens, line, is_any_of(" "));
+				boost::split(tokens, line, boost::is_any_of(" "));
 				x = blocks[0];
 				y = blocks[1];
 				type = blocks[2];
-				siteRow.add(Site(x, y, type))
+				siteRow[c] = Site(x, y, type);
 			}
 			sitemap.add(siteRow);
 		}	
@@ -111,3 +117,4 @@ vector<vector<<Site>> Parser::parse_sitemap() {
 
 	return sitemap;
 }
+*/

@@ -1,6 +1,7 @@
 #ifndef CELL_H
 #define CELL_H
 
+#include <vector>
 #include <string>
 
 using namespace std;
@@ -15,16 +16,15 @@ public:
 	int getX ();
 	int getY ();
 	bool isFixed ();
-	void addNeighbors (vector <Cell*> neighbors);	
-	//vector <Cell*> getNeighbors ();
+	void addNets (vector<string> netNames);	
 	void printData ();
 private:
-	const string _name;
-	const string _type;
+	string _name;
+	string _type;
 	int _x;
 	int _y;
-	const string _fixed;
-	const Cell* _neighbors;
+	string _fixed;
+	vector<string> _netNames;
 };
 
 #endif

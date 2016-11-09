@@ -8,13 +8,14 @@ using namespace std;
 
 
 Cell::Cell(const string& name, const string& type, 
-		int x, int y, const string& fixed) :
-	_name (name),
-	_type (type),
-	_x (x),
-	_y (y),
-	_fixed (fixed)
-{}
+		int x, int y, const string& fixed) {
+	_name = name;
+	_type = type;
+	_x = x;
+	_y = y;
+	_fixed = fixed;
+	_netNames = vector<string>();
+}
 
 string Cell::getName () { return _name; }
 
@@ -29,13 +30,9 @@ bool Cell::isFixed () {
 	else { return false; }
 }
 
-void Cell::addNeighbors (vector <Cell*> neighbors) {
-	
+void Cell::addNets (vector<string> netNames) {
+	_netNames = netNames;	
 }
-
-//vector <Cell*> Cell::getNeighbors () {
-//	
-//}
 
 
 void Cell::printData () {
@@ -48,18 +45,3 @@ void Cell::printData () {
 	cout << "\t" << "neighbors = []" << endl;
 	cout << "}" << endl;
 }
-
-/*
-int main () {
-	string name = "cell1";
-	string type = "CLB";
-	int x = 0;
-	int y = 0;
-	string fixed = "M";
-	Cell cell1("cell1", type, x, y, fixed);
-	Cell cell2("cell2", type, x, y, fixed);
-	
-
-	cell1.printData();
-}
-*/
