@@ -42,7 +42,8 @@ unordered_map<string, Net> Parser::parse_netlist() {
 			boost::split(tokens, line, boost::is_any_of(" ")); 
 			string name = tokens[0];
 			tokens.erase(tokens.begin());
-			netMap[name] = Net(name, tokens);	
+			Net net = Net(name, tokens);	
+			netMap.emplace(name, net);
 		}
 		file.close();
 	} 
