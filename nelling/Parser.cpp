@@ -42,8 +42,7 @@ unordered_map<string, Net> Parser::parse_netlist() {
 			boost::split(tokens, line, boost::is_any_of(" ")); 
 			string name = tokens[0];
 			tokens.erase(tokens.begin());
-			Net net = Net(name, tokens);	
-			netMap.emplace(name, net);
+			netMap.emplace(name, Net(name,tokens));
 		}
 		file.close();
 	} 
@@ -54,7 +53,7 @@ unordered_map<string, Net> Parser::parse_netlist() {
 	return netMap;	
 }
 
-/*
+
 unordered_map<string, Cell> Parser::parse_placement() {
 	unordered_map<string, Cell> cellMap;
 	ifstream file;
@@ -68,21 +67,22 @@ unordered_map<string, Cell> Parser::parse_placement() {
 			boost::split(tokens, line, boost::is_any_of(" "));
 			string name = tokens[0];
 			string type = tokens[1];
-			int x = tokens[2];
-			int y = tokens[3];
+			int x = stoi(tokens[2]);
+			int y = stoi(tokens[3]);
 			string fixed = tokens[4];
-			cellMap[name] = Cell(name, type, x, y, fixed);
+			cellMap.emplace(name, Cell(name, type, x, y, fixed));
 		}
 		file.close();
 	} 
 	catch (std::ifstream::failure e) {
 		cerr << "Exception occured during file handling";
+	}
 
 	return cellMap;
 }
-*/
-/*
-vector<vector<<Site>> Parser::parse_sitemap() {
+
+
+vector<vector<Site>> Parser::parse_sitemap() {
 	vector<vector<Site>> sitemap;
 	ifstream file;
 	file.exceptions (std::ifstream::failbit | std::ifstream::badbit);
@@ -90,32 +90,31 @@ vector<vector<<Site>> Parser::parse_sitemap() {
 	
 	try {
 		vector<string> tokens;
-		int col, rows, x, y;
+		int cols, rows, x, y;
 		string type;
 		
 		file.open(_smPath);
 		getline(file, line);
 		boost::split(tokens, line, boost::is_any_of(" "));
-		col = tokens[0];
-		rows = tokens[1];
+		cols = stoi(tokens[0]);
+		rows = stoi(tokens[1]);
 		
-		vector<Site> siteRow(cols);
 		for (int r = 0; r < rows; r++) {
-
+			vector<Site> siteRow;
 			for (int c = 0; c < cols; c++) {
 				boost::split(tokens, line, boost::is_any_of(" "));
-				x = blocks[0];
-				y = blocks[1];
-				type = blocks[2];
-				siteRow[c] = Site(x, y, type);
+				x = stoi(tokens[0]);
+				y = stoi(tokens[1]);
+				type = tokens[2];
+				siteRow.emplace_back(Site(x, y, type));
 			}
-			sitemap.add(siteRow);
+			sitemap.emplace_back(siteRow);
 		}	
 		file.close();
 	} 
 	catch (std::ifstream::failure e) {
 		cerr << "Exception occured during file handling";
+	}	
 
 	return sitemap;
 }
-*/

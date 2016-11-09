@@ -7,12 +7,12 @@
 using namespace std;
 
 
-Site::Site (int x, int y, const string& type) :
-	_x (x),
-	_y (y),
-	_type (type),
-	_cellName ("")
-{}
+Site::Site (int x, int y, const string& type) {
+	_x = x;
+	_y = y;
+	_type = type;
+	_cellName = "";
+}
 
 void Site::addCell (string cellName) {
 	_cellName = cellName; 	

@@ -12,9 +12,9 @@ public:
 	Site (int x, int y, const string& type);
 	void addCell (string cellName);
 private:
-	const int _x;
-	const int _y;
-	const string _type;
+	int _x;
+	int _y;
+	string _type;
 	string _cellName;
 };
 
