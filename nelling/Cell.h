@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <string>
+#include <iostream>
 
 using namespace std;
 
@@ -18,6 +19,7 @@ public:
 	bool isFixed ();
 	void addNets (vector<string> netNames);	
 	void printData ();
+	friend ostream& operator<< (ostream& os, const Cell& cell);
 private:
 	string _name;
 	string _type;

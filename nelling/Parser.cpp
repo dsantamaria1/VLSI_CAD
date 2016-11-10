@@ -32,7 +32,7 @@ void Parser::redefineParser(const string& _filepath, const string& _benchmark) {
 unordered_map<string, Net> Parser::parseNetlist() {
 	unordered_map<string, Net> netMap;
 	ifstream file;
-	file.exceptions (std::ifstream::failbit | std::ifstream::badbit);
+	//file.exceptions (std::ifstream::failbit | std::ifstream::badbit);
 	
 	try {
 		string line;
@@ -47,7 +47,7 @@ unordered_map<string, Net> Parser::parseNetlist() {
 		file.close();
 	} 
 	catch (std::ifstream::failure e) {
-		cerr << "Exception occured during file handling.";
+		cerr << "Exception occurred during file handling." << endl;
 	}
 
 	return netMap;	
@@ -57,7 +57,7 @@ unordered_map<string, Net> Parser::parseNetlist() {
 unordered_map<string, Cell> Parser::parsePlacement() {
 	unordered_map<string, Cell> cellMap;
 	ifstream file;
-	file.exceptions (std::ifstream::failbit | std::ifstream::badbit);
+	//file.exceptions (std::ifstream::failbit | std::ifstream::badbit);
 	string line;
 	
 	try {
@@ -75,7 +75,7 @@ unordered_map<string, Cell> Parser::parsePlacement() {
 		file.close();
 	} 
 	catch (std::ifstream::failure e) {
-		cerr << "Exception occured during file handling";
+		cerr << "Exception occurred during file handling" << endl;
 	}
 
 	return cellMap;
@@ -85,7 +85,7 @@ unordered_map<string, Cell> Parser::parsePlacement() {
 vector<vector<Site>> Parser::parseSitemap() {
 	vector<vector<Site>> sitemap;
 	ifstream file;
-	file.exceptions (std::ifstream::failbit | std::ifstream::badbit);
+	//file.exceptions (std::ifstream::failbit | std::ifstream::badbit);
 	string line;
 	
 	try {
@@ -102,6 +102,7 @@ vector<vector<Site>> Parser::parseSitemap() {
 		for (int r = 0; r < rows; r++) {
 			vector<Site> siteRow;
 			for (int c = 0; c < cols; c++) {
+				getline(file, line);
 				boost::split(tokens, line, boost::is_any_of(" "));
 				x = stoi(tokens[0]);
 				y = stoi(tokens[1]);
@@ -113,7 +114,7 @@ vector<vector<Site>> Parser::parseSitemap() {
 		file.close();
 	} 
 	catch (std::ifstream::failure e) {
-		cerr << "Exception occured during file handling";
+		cerr << "Exception occurred during file handling" << endl;
 	}	
 
 	return sitemap;
