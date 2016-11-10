@@ -21,7 +21,7 @@ Parser::Parser(const string& _filepath, const string& _benchmark) {
 }
 
 
-void Parser::redefine_parser(const string& _filepath, const string& _benchmark) {
+void Parser::redefineParser(const string& _filepath, const string& _benchmark) {
 	string basePath = _filepath + _benchmark;
 	_netsPath = basePath + ".nets";
 	_plPath = basePath + ".pl";
@@ -29,7 +29,7 @@ void Parser::redefine_parser(const string& _filepath, const string& _benchmark) 
 }
 
 
-unordered_map<string, Net> Parser::parse_netlist() {
+unordered_map<string, Net> Parser::parseNetlist() {
 	unordered_map<string, Net> netMap;
 	ifstream file;
 	file.exceptions (std::ifstream::failbit | std::ifstream::badbit);
@@ -54,7 +54,7 @@ unordered_map<string, Net> Parser::parse_netlist() {
 }
 
 
-unordered_map<string, Cell> Parser::parse_placement() {
+unordered_map<string, Cell> Parser::parsePlacement() {
 	unordered_map<string, Cell> cellMap;
 	ifstream file;
 	file.exceptions (std::ifstream::failbit | std::ifstream::badbit);
@@ -82,7 +82,7 @@ unordered_map<string, Cell> Parser::parse_placement() {
 }
 
 
-vector<vector<Site>> Parser::parse_sitemap() {
+vector<vector<Site>> Parser::parseSitemap() {
 	vector<vector<Site>> sitemap;
 	ifstream file;
 	file.exceptions (std::ifstream::failbit | std::ifstream::badbit);
