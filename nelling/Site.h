@@ -11,8 +11,10 @@ using namespace std;
 
 class Site {
 public:
-	Site (int x, int y, const string& type);
+	Site (int x = 0, int y = 0, const string& type = "");
+	Site (const Site& site);
 	void addCell (string cellName);
+	string getCellName ();
 	friend ostream& operator<<(ostream& os, const Site& site);
 private:
 	int _x;

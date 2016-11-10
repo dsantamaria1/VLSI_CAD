@@ -15,8 +15,19 @@ Site::Site (int x, int y, const string& type) {
 	_cellName = "";
 }
 
+Site::Site (const Site& site) {
+	_x = site._x;
+	_y = site._y;
+	_type = site._type;
+	_cellName = site._cellName;
+}
+
 void Site::addCell (string cellName) {
 	_cellName = cellName; 	
+}
+
+string Site::getCellName () {
+	return _cellName;
 }
 
 

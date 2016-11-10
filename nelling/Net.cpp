@@ -18,6 +18,11 @@ Net::Net (const Net& net) {
 }
 
 
+vector<string> Net::getCellNames () {
+	return _cellNames;
+}
+
+
 ostream& operator<< (ostream& os, const Net& net) {
 	os << "{" << net._name;
 	vector<string> cellNames = net._cellNames;

@@ -7,7 +7,7 @@
 using namespace std;
 
 
-Cell::Cell(const string& name, const string& type, 
+Cell::Cell (const string& name, const string& type, 
 		int x, int y, const string& fixed) {
 	_name = name;
 	_type = type;
@@ -15,6 +15,15 @@ Cell::Cell(const string& name, const string& type,
 	_y = y;
 	_fixed = fixed;
 	_netNames = vector<string>();
+}
+
+Cell::Cell (const Cell& cell) {	
+	_name = cell._name;
+	_type = cell._type;
+	_x = cell._x;
+	_y = cell._y;
+	_fixed = cell._fixed;
+	_netNames = cell._netNames;;
 }
 
 string Cell::getName () { return _name; }
@@ -34,6 +43,9 @@ void Cell::addNets (vector<string> netNames) {
 	_netNames = netNames;	
 }
 
+vector<string> Cell::getNetNames () {
+	return _netNames;
+}
 
 void Cell::printData () {
 	cout << "Cell {" << endl;	
