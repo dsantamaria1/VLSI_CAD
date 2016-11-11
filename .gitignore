@@ -1,2 +1,6 @@
 *.o
+*.swp
 nelling/*.swp
+dsantamaria/*.swp
+nelling/*.o
+dsantamaria/*.o
