@@ -19,6 +19,7 @@ public:
 	int getY ();
 	bool isFixed ();
 	void addNets (vector<string> netNames);	
+	void addNet (string netName);	
 	vector<string> getNetNames ();
 	friend ostream& operator<< (ostream& os, const Cell& cell);
 private:
