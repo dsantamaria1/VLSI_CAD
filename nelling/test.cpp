@@ -45,24 +45,46 @@ void test_placement_creation (Placement placement,
 }
 
 
-void linear_placement_algorithm (Placement placement, 
+void lp_algorithm (Placement placement, 
 		unordered_map<string, Cell> cellMap, unordered_map<string, Net> netMap) {
-		
+	// Start by picking an arbitrary row. Let's pick the first one
+	int row = 0;
+	vector<Site> siteRow = placement.getRow(row);
+			
 }
+
+int lp_cost () {
+	return 0;
+}
+
 
 
 // Algorithm Driver Function
 int main (int argc, char* argv[]) {
+	// Generate Parser and parse all input files
 	string filepath = argv[1];
 	string filename = argv[2];
 	Parser parser = Parser(filepath, filename);
 	vector<vector<Site>> sitemap = parser.parseSitemap();	
-	unordered_map<string, Cell> cellMap = parser.parsePlacement();
 	unordered_map<string, Net> netMap = parser.parseNetlist();
+	unordered_map<string, Cell> cellMap = parser.parsePlacement();
 
+	// Initialize cells in cellMap to include net names
+	for (auto it_net = netMap.begin(); it_net != netMap.end(); ++it_net) {
+		Net net = (it_net->second);
+		vector<string> cellNames = net.getCellNames();
+		for (auto it_cell = cellNames.begin(); it_cell != cellNames.end(); 
+				++it_cell) {
+			string cellName = (*it_cell);
+			(cellMap[cellName]).addNet(net.getName());	
+		}
+	}		
+	cout << cellMap["cell_0"] << endl;
+
+	
+	// Initialize placement of FPGA sites
 	int rows = sitemap.size();
 	int cols = sitemap[0].size();
-	
 	Placement placement = Placement(rows, cols, sitemap);
 	placement.addCells( cellMap.begin(), cellMap.end() );	
 
