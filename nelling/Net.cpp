@@ -17,6 +17,9 @@ Net::Net (const Net& net) {
 	_cellNames = net._cellNames;
 }
 
+string Net::getName () {
+	return _name;
+}
 
 vector<string> Net::getCellNames () {
 	return _cellNames;

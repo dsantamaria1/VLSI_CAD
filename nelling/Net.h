@@ -11,6 +11,7 @@ class Net {
 public:
 	Net (string name = "", vector<string> cellNames = vector<string>());
 	Net (const Net& net);
+	string getName ();
 	vector<string> getCellNames ();
 	friend ostream& operator<< (ostream& os, const Net& net);
 private:

@@ -43,6 +43,10 @@ void Cell::addNets (vector<string> netNames) {
 	_netNames = netNames;	
 }
 
+void Cell::addNet (string netName) {
+	_netNames.emplace_back(netName);
+}
+
 vector<string> Cell::getNetNames () {
 	return _netNames;
 }
@@ -54,7 +58,7 @@ ostream& operator <<(ostream& os, const Cell& cell) {
 	vector<string> netNames = cell._netNames; 
 	if ( netNames.empty() ) { os << ", []}"; }
 	else { 
-		os << "[";
+		os << ", [";
 		for (int i = 0; i < netNames.size(); i++) {
 			os << netNames[i];
 			if ((i+1) != netNames.size()) { os << ", "; }
