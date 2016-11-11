@@ -32,13 +32,12 @@ void Parser::redefineParser(const string& _filepath, const string& _benchmark) {
 unordered_map<string, Net> Parser::parseNetlist() {
 	unordered_map<string, Net> netMap;
 	ifstream file;
-	//file.exceptions (std::ifstream::failbit | std::ifstream::badbit);
 	
 	try {
 		string line;
+		vector<string> tokens;
 		file.open(_netsPath);
 		while ( getline(file, line) ) {
-			vector<string> tokens;
 			boost::split(tokens, line, boost::is_any_of(" ")); 
 			string name = tokens[0];
 			tokens.erase(tokens.begin());
@@ -57,10 +56,9 @@ unordered_map<string, Net> Parser::parseNetlist() {
 unordered_map<string, Cell> Parser::parsePlacement() {
 	unordered_map<string, Cell> cellMap;
 	ifstream file;
-	//file.exceptions (std::ifstream::failbit | std::ifstream::badbit);
-	string line;
 	
 	try {
+		string line;	
 		vector<string> tokens;
 		file.open(_plPath);
 		while ( getline(file, line) ) {
@@ -85,11 +83,11 @@ unordered_map<string, Cell> Parser::parsePlacement() {
 vector<vector<Site>> Parser::parseSitemap() {
 	vector<vector<Site>> sitemap;
 	ifstream file;
-	//file.exceptions (std::ifstream::failbit | std::ifstream::badbit);
-	string line;
 	
 	try {
+		string line;
 		vector<string> tokens;
+		
 		int cols, rows, x, y;
 		string type;
 		

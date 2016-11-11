@@ -20,7 +20,6 @@ public:
 	bool isFixed ();
 	void addNets (vector<string> netNames);	
 	vector<string> getNetNames ();
-	void printData ();
 	friend ostream& operator<< (ostream& os, const Cell& cell);
 private:
 	string _name;

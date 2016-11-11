@@ -47,17 +47,6 @@ vector<string> Cell::getNetNames () {
 	return _netNames;
 }
 
-void Cell::printData () {
-	cout << "Cell {" << endl;	
-	cout << "\t" << "name = " << getName() << endl;
-	cout << "\t" << "type = " << getType() << endl;
-	cout << "\t" << "x = " << getX() << endl;
-	cout << "\t" << "y = " << getY() << endl;
-	cout << "\t" << "fixed = " << isFixed() << endl;
-	cout << "\t" << "neighbors = []" << endl;
-	cout << "}" << endl;
-}
-
 
 ostream& operator <<(ostream& os, const Cell& cell) {
 	os << "{" << cell._name << ", " << cell._type << ", " << cell._x << ", " 

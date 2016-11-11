@@ -8,11 +8,11 @@
 using namespace std;
 
 
-Site::Site (int x, int y, const string& type) {
+Site::Site (int x, int y, const string& type, const string& cellName) {
 	_x = x;
 	_y = y;
 	_type = type;
-	_cellName = "";
+	_cellName = cellName;
 }
 
 Site::Site (const Site& site) {
@@ -21,6 +21,10 @@ Site::Site (const Site& site) {
 	_type = site._type;
 	_cellName = site._cellName;
 }
+
+//Site::~Site () {
+	//delete _cellName;
+//}
 
 void Site::addCell (string cellName) {
 	_cellName = cellName; 	
