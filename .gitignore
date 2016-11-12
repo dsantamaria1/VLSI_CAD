@@ -1,5 +1,6 @@
 *.o
 *.swp
+.DS_Store
 nelling/*.swp
 dsantamaria/*.swp
 nelling/*.o
