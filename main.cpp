@@ -9,47 +9,60 @@
 #include "Placement.h"
 #include "Parser.h"
 
+#define WINDOW_SIZE 7
 using namespace std;
 
 
 // Helper Functions
-void test_parser_objects (vector<vector<Site>> sm, unordered_map<string, Cell> cm,
-		unordered_map<string, Net> nm) {
-	cout << sm[0][0] << endl;
-	auto it_cell = cm.begin();
-	cout << it_cell->first << " : " << it_cell->second << endl;
-	auto it_net = nm.begin();
-	cout << it_net->first << " : " << it_net->second << endl;
+int calcHPWL(unordered_map<string, Net>* netMap, unordered_map<string, Cell>* cellMap){
+		int xMax, yMax = 0;
+		int xMin, yMin = INT_MAX;
+		int hpwl = 0;
+		for( auto it = (*netMap).begin(); it != (*netMap).end(); ++it){
+				vector<string> cells = (it->second).getCellNames();
+
+				for(int i=0; i<cells.size(); i++){
+					int y = (*cellMap)[cells[i]].getX();
+					int x = (*cellMap)[cells[i]].getY();
+					xMin = (x < xMin) ? x : xMin;
+					xMax = (x > xMax) ? x : xMax;
+					yMin = (y < yMin) ? y : yMin;
+					yMax = (y > yMax) ? y : yMax;
+				}
+				hpwl += abs(xMax-xMin) + abs(yMax - yMin);
+		}
+		return hpwl;
 }
 
+void interleave(vector<Site>* v){
+	int length = v->size();
+	int start =0; int end = WINDOW_SIZE;
+	int numWindows = (length/WINDOW_SIZE) + 1; //+1 for remainder
+	int remainderSites = length%WINDOW_SIZE;
+	vector<Site> setA,setB;
 
-void test_site_creation () {
-	Site site0 = Site(0, 0, "CLB");
-	Cell cell0 = Cell("cell0", "CLB", 0, 0, "M");
-	site0.addCell( cell0.getName() );
-
-	Cell cell1 = Cell("cell1", "CLB", 0, 1, "M");
-	Site site1 = Site(0, 1, "CLB", cell1.getName());
-
-	cout << site0 << endl;
-	cout << site1 << endl;
+	for(int j=0;j<numWindows;j++){ //TODO: fix index
+		if(j*WINDOW_SIZE >= length){
+			start = j*WINDOW_SIZE;
+			end = start + remainderSites;
+		} else {
+			start = j*WINDOW_SIZE;
+			end = start+WINDOW_SIZE;
+		}
+		cout << "window= "<<j << " start:end = "<< start<< ":"<<end <<endl;
+		for(int i=start; i<end; i++){
+			if(i&1) //odd
+				setA.push_back((*v)[i]);
+			else ///even
+				setB.push_back((*v)[i]);
+		}
+		//DO the interleaving
+		cout << "Size of setA= " <<setA.size() <<endl;
+		cout << "Size of setB= " <<setB.size() <<endl;
+		setA.clear();
+		setB.clear();
+	}
 }
-
-void test_placement_creation (Placement placement,
-		unordered_map<string, Cell> cellMap, int x, int y) {
-	Site site00 = placement.getSite(x, y);
-	string cellName = site00.getCellName();
-	Cell cell00 = Cell(cellMap[ cellName ]);
-	cout << "Cell Name: " << cellName << endl;
-	cout << site00 << " : " << cell00 << endl;
-}
-
-
-void linear_placement_algorithm (Placement placement,
-		unordered_map<string, Cell> cellMap, unordered_map<string, Net> netMap) {
-
-}
-
 
 // Algorithm Driver Function
 int main (int argc, char* argv[]) {
@@ -69,6 +82,7 @@ int main (int argc, char* argv[]) {
 	Placement placement = Placement(rows, cols, sitemap);
 	placement.addCells( cellMap.begin(), cellMap.end() );
 
+
   for(auto it = netMap.begin(); it != netMap.end(); ++it){
 		cellNames = it->second.getCellNames();
 		for(int i =0; i < cellNames.size(); i++){
@@ -76,15 +90,13 @@ int main (int argc, char* argv[]) {
 		}
 	}
 
-	// for(auto it = cellMap.begin(); it != cellMap.end(); ++it){
-	// 	cout << it->second << endl;
+	//  Run Algorithm
+	vector<Site> v = placement.getRow(0);
+	int hpwl = calcHPWL(&netMap, &cellMap);
+	cout << "HPWL = " << hpwl << endl;
+	//interleave(&v);
+	// for(int i=0; i<1; i++){
+	// 	vector<Site> v = placement.getRow(i);
+	// 	interleave(&v);
 	// }
-
-
-//  Run Algorithm
-for(){
-
-}
-//	linear_placement_algorithm(placement, cellMap, netMap);
-
 }
