@@ -15,12 +15,14 @@ using namespace std;
 
 // Helper Functions
 int calcHPWL(unordered_map<string, Net>* netMap, unordered_map<string, Cell>* cellMap){
-		int xMax, yMax = 0;
-		int xMin, yMin = INT_MAX;
+
 		int hpwl = 0;
 		for( auto it = (*netMap).begin(); it != (*netMap).end(); ++it){
 				vector<string> cells = (it->second).getCellNames();
-
+				int xMax = 0;
+				int yMax = 0;
+				int xMin = INT_MAX;
+				int yMin = INT_MAX;
 				for(int i=0; i<cells.size(); i++){
 					int y = (*cellMap)[cells[i]].getX();
 					int x = (*cellMap)[cells[i]].getY();
@@ -29,7 +31,8 @@ int calcHPWL(unordered_map<string, Net>* netMap, unordered_map<string, Cell>* ce
 					yMin = (y < yMin) ? y : yMin;
 					yMax = (y > yMax) ? y : yMax;
 				}
-				hpwl += abs(xMax-xMin) + abs(yMax - yMin);
+				int hpwl_local = abs(xMax-xMin) + abs(yMax - yMin);
+				hpwl += hpwl_local;
 		}
 		return hpwl;
 }
