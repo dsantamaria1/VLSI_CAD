@@ -37,12 +37,14 @@ int calcHPWL(unordered_map<string, Net>* netMap, unordered_map<string, Cell>* ce
 		return hpwl;
 }
 
-void interleave(vector<Site>* v){
+void interleave(vector<Site>* v, Placement placement, unordered_map<string, Cell> cellMap,
+                unordered_map<string, Net> netMap){
 	int length = v->size();
 	int start =0; int end = WINDOW_SIZE;
 	int numWindows = (length/WINDOW_SIZE) + 1; //+1 for remainder
 	int remainderSites = length%WINDOW_SIZE;
 	vector<Site> setA,setB;
+
 
 	for(int j=0;j<numWindows;j++){ //TODO: fix index
 		if(j*WINDOW_SIZE >= length){
@@ -53,15 +55,22 @@ void interleave(vector<Site>* v){
 			end = start+WINDOW_SIZE;
 		}
 		cout << "window= "<<j << " start:end = "<< start<< ":"<<end <<endl;
+		bool emptyWindow = true;
 		for(int i=start; i<end; i++){
+			if((*v)[i].getCellName() != ""){ emptyWindow = false;}
 			if(i&1) //odd
 				setA.push_back((*v)[i]);
 			else ///even
 				setB.push_back((*v)[i]);
 		}
+
+		if (emptyWindow) {
+			cout << "Found empty Window" << endl;
+			continue;
+		}
 		//DO the interleaving
-		cout << "Size of setA= " <<setA.size() <<endl;
-		cout << "Size of setB= " <<setB.size() <<endl;
+
+
 		setA.clear();
 		setB.clear();
 	}
@@ -85,7 +94,6 @@ int main (int argc, char* argv[]) {
 	Placement placement = Placement(rows, cols, sitemap);
 	placement.addCells( cellMap.begin(), cellMap.end() );
 
-
   for(auto it = netMap.begin(); it != netMap.end(); ++it){
 		cellNames = it->second.getCellNames();
 		for(int i =0; i < cellNames.size(); i++){
@@ -95,9 +103,9 @@ int main (int argc, char* argv[]) {
 
 	//  Run Algorithm
 	vector<Site> v = placement.getRow(0);
-	int hpwl = calcHPWL(&netMap, &cellMap);
-	cout << "HPWL = " << hpwl << endl;
-	//interleave(&v);
+	// int hpwl = calcHPWL(&netMap, &cellMap);
+	// cout << "HPWL = " << hpwl << endl;
+	interleave(&v);
 	// for(int i=0; i<1; i++){
 	// 	vector<Site> v = placement.getRow(i);
 	// 	interleave(&v);
