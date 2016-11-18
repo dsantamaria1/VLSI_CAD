@@ -37,14 +37,13 @@ int calcHPWL(unordered_map<string, Net>* netMap, unordered_map<string, Cell>* ce
 		return hpwl;
 }
 
-void interleave(vector<Site>* v, Placement placement, unordered_map<string, Cell> cellMap,
+void interleave(vector<Site>* v, unordered_map<string, Cell> cellMap,
                 unordered_map<string, Net> netMap){
 	int length = v->size();
 	int start =0; int end = WINDOW_SIZE;
 	int numWindows = (length/WINDOW_SIZE) + 1; //+1 for remainder
 	int remainderSites = length%WINDOW_SIZE;
-	vector<Site> setA,setB;
-
+	vector<Cell> setA,setB;
 
 	for(int j=0;j<numWindows;j++){ //TODO: fix index
 		if(j*WINDOW_SIZE >= length){
@@ -55,21 +54,45 @@ void interleave(vector<Site>* v, Placement placement, unordered_map<string, Cell
 			end = start+WINDOW_SIZE;
 		}
 		cout << "window= "<<j << " start:end = "<< start<< ":"<<end <<endl;
+
 		bool emptyWindow = true;
 		for(int i=start; i<end; i++){
-			if((*v)[i].getCellName() != ""){ emptyWindow = false;}
-			if(i&1) //odd
-				setA.push_back((*v)[i]);
-			else ///even
-				setB.push_back((*v)[i]);
+			string cellName = (*v)[i].getCellName();
+			if(!cellName.empty() && i&1){
+				setA.emplace_back(cellMap[cellName]);
+				emptyWindow = false;
+			} else if(!cellName.empty()){
+				setB.emplace_back(cellMap[cellName]);
+				emptyWindow = false;
+			} else if(cellName.empty() && i&1){
+				setA.emplace_back(Cell());
+			} else {
+				setB.emplace_back(Cell());
+			}
 		}
-
+		//if window has no cells, then move on
 		if (emptyWindow) {
 			cout << "Found empty Window" << endl;
+			setA.clear();
+			setB.clear();
 			continue;
+		} else {
+			cout << "SetA.size() = " <<setA.size() <<
+			" SetB.size() = " << setB.size() << endl;
 		}
-		//DO the interleaving
-
+		//start interleaving
+		for(int i=start; i<end; i++){
+			Cell a = setA.front();
+			Cell b = setB.front();
+			cout << "From A: " << a << endl;
+			cout << "From B: " << b << endl;
+			if(setA.size() > 0)
+				setA.erase(setA.begin());
+			if(setB.size() > 0)
+				setB.erase(setB.begin());
+			cout << "SetA.size() = " <<setA.size() <<
+			" SetB.size() = " << setB.size() << endl;
+		}
 
 		setA.clear();
 		setB.clear();
@@ -105,7 +128,7 @@ int main (int argc, char* argv[]) {
 	vector<Site> v = placement.getRow(0);
 	// int hpwl = calcHPWL(&netMap, &cellMap);
 	// cout << "HPWL = " << hpwl << endl;
-	interleave(&v);
+	interleave(&v, cellMap, netMap);
 	// for(int i=0; i<1; i++){
 	// 	vector<Site> v = placement.getRow(i);
 	// 	interleave(&v);
