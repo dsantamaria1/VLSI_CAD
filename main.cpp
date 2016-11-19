@@ -68,8 +68,8 @@ int cost (Cell cell, int x, unordered_map<string, Net>* netMap,
         return totalCost;
 }
 
-void interleave(vector<Site>* v, unordered_map<string, Cell> cellMap,
-                unordered_map<string, Net> netMap){
+void interleave(vector<Site>* v, unordered_map<string, Cell>* cellMap,
+                unordered_map<string, Net>* netMap){
 	int length = v->size();
 	int start =0; int end = WINDOW_SIZE;
 	int numWindows = (length/WINDOW_SIZE) + 1; //+1 for remainder
@@ -92,10 +92,10 @@ void interleave(vector<Site>* v, unordered_map<string, Cell> cellMap,
 			string cellName = (*v)[i].getCellName();
 			cout << cellName << ",";
 			if(!cellName.empty() && i&1){
-				setA.emplace_back(cellMap[cellName]);
+				setA.emplace_back((*cellMap)[cellName]);
 				emptyWindow = false;
 			} else if(!cellName.empty()){
-				setB.emplace_back(cellMap[cellName]);
+				setB.emplace_back((*cellMap)[cellName]);
 				emptyWindow = false;
 			} else if(cellName.empty() && i&1){
 				setA.emplace_back(Cell());
@@ -133,8 +133,8 @@ void interleave(vector<Site>* v, unordered_map<string, Cell> cellMap,
 					}
 
 				} else if(a.getName().empty() && !b.getName().empty()){
-					costB = cost(b,i,&netMap,&cellMap);
-					int temp = cost(b,i+1,&netMap,&cellMap); //place empty cell first or second?
+					costB = cost(b,i,netMap,cellMap);
+					int temp = cost(b,i+1,netMap,cellMap); //place empty cell first or second?
 					if(costB <= temp){
 						newCellPlacement.emplace_back(b);
 						setB.erase(setB.begin());
@@ -144,8 +144,8 @@ void interleave(vector<Site>* v, unordered_map<string, Cell> cellMap,
 					}
 
 				} else if(!a.getName().empty() && b.getName().empty()) {
-					costA = cost(a,i,&netMap,&cellMap);
-					int temp = cost(a,i+1,&netMap,&cellMap);
+					costA = cost(a,i,netMap,cellMap);
+					int temp = cost(a,i+1,netMap,cellMap);
 					if(costA <= temp){
 						newCellPlacement.emplace_back(a);
 						setA.erase(setA.begin());
@@ -155,8 +155,8 @@ void interleave(vector<Site>* v, unordered_map<string, Cell> cellMap,
 					}
 
 				} else {
-					costA = cost(a,i,&netMap,&cellMap);
-					costB = cost(b,i,&netMap,&cellMap);
+					costA = cost(a,i,netMap,cellMap);
+					costB = cost(b,i,netMap,cellMap);
 					if(costA <= costB){
 						newCellPlacement.emplace_back(a);
 						setA.erase(setA.begin());
@@ -165,9 +165,6 @@ void interleave(vector<Site>* v, unordered_map<string, Cell> cellMap,
 						setB.erase(setB.begin());
 					}
 				}
-
-
-
 				cout << "SetA.size() = " <<setA.size() <<	" SetB.size() = "
 							<< setB.size() << endl;
 			} else if(setA.empty() && !setB.empty()){ // can only choose from B
@@ -229,10 +226,10 @@ int main (int argc, char* argv[]) {
 	}
 
 	//  Run Algorithm
-	vector<Site> v = placement.getRow(61);
-	// int hpwl = calcHPWL(&netMap, &cellMap);
-	// cout << "HPWL = " << hpwl << endl;
-	interleave(&v, cellMap, netMap);
+	vector<Site> v = placement.getRow(100);
+	int hpwl = calcHPWL(&netMap, &cellMap);
+	cout << "HPWL = " << hpwl << endl;
+	interleave(&v, &cellMap, &netMap);
 	// for(int i=0; i<1; i++){
 	// 	vector<Site> v = placement.getRow(i);
 	// 	interleave(&v);
