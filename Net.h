@@ -15,11 +15,20 @@ public:
 	Net (string name = "", vector<string> cellNames = vector<string>());
 	Net (const Net& net);
 	string getName ();
+	int getXMin ();
+	int getXMax ();
+	int getYMin ();
+	int getYMax ();
 	vector<string> getCellNames ();
-	int calculateHPWL (unordered_map<string, Cell>* cellMap);
+	void setBoundingBox (unordered_map<string, Cell>* cellMap);
+	int getHPWL ();
 	friend ostream& operator<< (ostream& os, const Net& net);
 private:
 	string _name;
+	int _x_min;
+	int _x_max;
+	int _y_min;
+	int _y_max;
 	vector<string> _cellNames;	
 };
 

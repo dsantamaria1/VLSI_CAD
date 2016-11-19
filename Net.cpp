@@ -16,6 +16,10 @@ Net::Net (string name, vector<string> cellNames) {
 
 Net::Net (const Net& net) {
 	_name = net._name;
+	_x_min = net._x_min;
+	_x_max = net._x_max;
+	_y_min = net._y_min;
+	_y_max = net._y_max;
 	_cellNames = net._cellNames;
 }
 
@@ -23,12 +27,27 @@ string Net::getName () {
 	return _name;
 }
 
+int Net::getXMin () {
+	return _x_min;
+}
+
+int Net::getXMax () {
+	return _x_max;
+}
+
+int Net::getYMin () {
+	return _y_min;
+}
+
+int Net::getYMax () {
+	return _y_max;
+}
 vector<string> Net::getCellNames () {
 	return _cellNames;
 }
 
-int Net::calculateHPWL (unordered_map<string, Cell>* cellMap) {
-	int HPWL = 0;
+
+void Net::setBoundingBox (unordered_map<string, Cell>* cellMap) {
 	int x_min = INT_MAX; 
 	int x_max = 0;
 	int y_min = INT_MAX; 
@@ -39,15 +58,21 @@ int Net::calculateHPWL (unordered_map<string, Cell>* cellMap) {
 		int x = (*cellMap)[cellName].getX();
 		int y = (*cellMap)[cellName].getY();
 			
-		x_max = (x > x_max) ? x : x_max;
 		x_min = (x < x_min) ? x : x_min;
-		y_max = (y > y_max) ? y : y_max;
+		x_max = (x > x_max) ? x : x_max;
 		y_min = (y < y_min) ? y : y_min;
+		y_max = (y > y_max) ? y : y_max;
 	}
-	
-	// Sum the HPWL from each net in the netlist
-	HPWL = (x_max - x_min) + (y_max - y_min);
 		
+	_x_min = x_min;
+	_x_max = x_max;
+	_y_min = y_min;
+	_y_max = y_max;
+}
+
+// Sum the HPWL from each net in the netlist
+int Net::getHPWL () {
+	int	HPWL = (_x_max - _x_min) + (_y_max - _y_min);
 	return HPWL;	
 }
 

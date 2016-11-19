@@ -16,7 +16,9 @@ public:
 	string getName ();
 	string getType ();
 	int getX ();
+	void setX (int newX);
 	int getY ();
+	void setY (int newY);
 	bool isFixed ();
 	void addNets (vector<string> netNames);	
 	void addNet (string netName);	
