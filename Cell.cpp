@@ -7,7 +7,7 @@
 using namespace std;
 
 
-Cell::Cell (const string& name, const string& type, 
+Cell::Cell (const string& name, const string& type,
 		int x, int y, const string& fixed) {
 	_name = name;
 	_type = type;
@@ -17,7 +17,7 @@ Cell::Cell (const string& name, const string& type,
 	_netNames = vector<string>();
 }
 
-Cell::Cell (const Cell& cell) {	
+Cell::Cell (const Cell& cell) {
 	_name = cell._name;
 	_type = cell._type;
 	_x = cell._x;
@@ -29,18 +29,20 @@ Cell::Cell (const Cell& cell) {
 string Cell::getName () { return _name; }
 
 string Cell::getType () { return _type; }
-	
+
 int Cell::getX () { return _x; }
+
+void Cell::setX (int newX) { _x = newX;}
 
 int Cell::getY () { return _y; }
 
-bool Cell::isFixed () { 
+bool Cell::isFixed () {
 	if (_fixed == "F") { return true; }
 	else { return false; }
 }
 
 void Cell::addNets (vector<string> netNames) {
-	_netNames = netNames;	
+	_netNames = netNames;
 }
 
 void Cell::addNet (string netName) {
@@ -53,11 +55,11 @@ vector<string> Cell::getNetNames () {
 
 
 ostream& operator <<(ostream& os, const Cell& cell) {
-	os << "{" << cell._name << ", " << cell._type << ", " << cell._x << ", " 
+	os << "{" << cell._name << ", " << cell._type << ", " << cell._x << ", "
 		<< cell._y << ", " << cell._fixed;
-	vector<string> netNames = cell._netNames; 
+	vector<string> netNames = cell._netNames;
 	if ( netNames.empty() ) { os << ", []}"; }
-	else { 
+	else {
 		os << ", [";
 		for (int i = 0; i < netNames.size(); i++) {
 			os << netNames[i];
@@ -65,7 +67,6 @@ ostream& operator <<(ostream& os, const Cell& cell) {
 		}
 		os << "]}";
 	}
-	
+
 	return os;
 }
-

@@ -10,16 +10,17 @@ using namespace std;
 
 class Cell {
 public:
-	Cell (const string& name = "", const string& type = "", int x = 0, int y = 0, 
+	Cell (const string& name = "", const string& type = "", int x = 0, int y = 0,
 		const string& fixed = "");
 	Cell (const Cell& cell);
 	string getName ();
 	string getType ();
 	int getX ();
+	void setX (int newX);
 	int getY ();
 	bool isFixed ();
-	void addNets (vector<string> netNames);	
-	void addNet (string netName);	
+	void addNets (vector<string> netNames);
+	void addNet (string netName);
 	vector<string> getNetNames ();
 	friend ostream& operator<< (ostream& os, const Cell& cell);
 private:
@@ -32,4 +33,3 @@ private:
 };
 
 #endif
-
