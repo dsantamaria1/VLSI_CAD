@@ -84,7 +84,7 @@ void interleave(vector<Site>* v, unordered_map<string, Cell>* cellMap,
 			start = j*WINDOW_SIZE;
 			end = start+WINDOW_SIZE;
 		}
-		//cout << "window= "<<j << " start:end = "<< start<< ":"<<end <<endl;
+		cout << "window= "<<j << " start:end = "<< start<< ":"<<end <<endl;
 
 		bool emptyWindow = true;
 		//cout << "Current Placement [";
@@ -176,7 +176,7 @@ void interleave(vector<Site>* v, unordered_map<string, Cell>* cellMap,
 						setB.erase(setB.begin());
 					} else {
 						cout << endl << endl;
-						cout << "BOTH CELL OPTIONS DID NOT MATCH SITE TYPE!!!!" << endl;
+						cout << "BOTH CELL OPTIONS DID NOT MATCH SITE TYPE! Location="<<i << endl;
 						cout << "siteType = " <<siteType<<" cellTypeA = " << a.getType()
 						<<" cellTypeB = " << b.getType()<< endl;
 						cout << endl;
@@ -261,6 +261,7 @@ int main (int argc, char* argv[]) {
 	unordered_map<string, Cell> cellMap = parser.parsePlacement();
 	unordered_map<string, Net> netMap = parser.parseNetlist();
 
+
 	int rows = sitemap.size();
 	int cols = sitemap[0].size();
 
@@ -278,7 +279,7 @@ int main (int argc, char* argv[]) {
 	int hpwl = calcHPWL(&netMap, &cellMap);
 	cout << "HPWL = " << hpwl << endl;
 
-	for(int i=0; i<placement.getRows(); i++){
+	for(int i=0; i<1; i++){
 		cout << "Interleaving row " << i << endl;
 		vector<Site> v = placement.getRow(i);
 		interleave(&v, &cellMap, &netMap);
