@@ -12,6 +12,13 @@
 #define WINDOW_SIZE 7
 using namespace std;
 
+struct Node{
+	int parent;
+	int left;
+	int right;
+	int nodeId;
+	int cost;
+};
 
 // Helper Functions
 int calcHPWL(unordered_map<string, Net>* netMap, unordered_map<string, Cell>* cellMap){
@@ -115,135 +122,14 @@ void interleave(vector<Site>* v, unordered_map<string, Cell>* cellMap,
 		// 	cout << "SetA.size() = " <<setA.size() <<
 		// 	" SetB.size() = " << setB.size() << endl;
 		// }
+
 		//start interleaving
 		vector<Cell> newCellPlacement;
 		for(int i=start; i<end; i++){
 			int costA, costB;
 			string siteType = (*v)[i].getType();
-			if(!setA.empty() && !setB.empty()){
-				Cell a = setA.at(0);
-				Cell b = setB.at(0);
 
-				if(a.getName().empty() && b.getName().empty()){ // two empty cells
-					if(setA.size() >= setB.size()){
-						//cout << "placing A" << a <<" on site " << siteType<<endl;
-						newCellPlacement.emplace_back(a);
-						setA.erase(setA.begin());
-					} else {
-						//cout << "placing B " << b << " on site " << siteType<<endl;
-						newCellPlacement.emplace_back(b);
-						setB.erase(setB.begin());
-					}
-
-				} else if(a.getName().empty() && !b.getName().empty()){ //b is real cell
-					costB = cost(b,i,netMap,cellMap);
-					int temp = cost(b,i+1,netMap,cellMap); //place empty cell first or second?
-					//if(costB <= temp && siteType == b.getType()){
-					if(siteType == b.getType()){
-						//cout << "placing B " << b << " on site " << siteType<<endl;
-						newCellPlacement.emplace_back(b);
-						setB.erase(setB.begin());
-					} else {
-						//cout << "placing A" << a <<" on site " << siteType<<endl;
-						newCellPlacement.emplace_back(a);
-						setA.erase(setA.begin());
-					}
-
-				} else if(!a.getName().empty() && b.getName().empty()) { //a is real cell
-					costA = cost(a,i,netMap,cellMap);
-					int temp = cost(a,i+1,netMap,cellMap);
-					//if(costA <= temp && siteType == a.getType()){
-					if(siteType == a.getType()){
-						//cout << "placing A" << a <<" on site " << siteType<<endl;
-						newCellPlacement.emplace_back(a);
-						setA.erase(setA.begin());
-					} else {
-						//cout << "placing B " << b << " on site " << siteType<<endl;
-						newCellPlacement.emplace_back(b);
-						setB.erase(setB.begin());
-					}
-
-				} else { //Got two real cells
-					costA = cost(a,i,netMap,cellMap);
-					costB = cost(b,i,netMap,cellMap);
-					if(costA <= costB && siteType == a.getType()){
-						//cout << "placing A" << a <<" on site " << siteType<<endl;
-						newCellPlacement.emplace_back(a);
-						setA.erase(setA.begin());
-					} else if(siteType == b.getType()){
-						//cout << "placing B " << b << " on site " << siteType<<endl;
-						newCellPlacement.emplace_back(b);
-						setB.erase(setB.begin());
-					} else {
-						cout << endl << endl;
-						cout << "BOTH CELL OPTIONS DID NOT MATCH SITE TYPE! Location="<<i << endl;
-						cout << "siteType = " <<siteType<<" cellTypeA = " << a.getType()
-						<<" cellTypeB = " << b.getType()<< endl;
-						cout << endl;
-						for(int k=0; k<setA.size(); k++){
-							cout << "Trace: SetA["<<k<<"]=" << setA[k] << endl;
-						}
-						for(int k=0; k<setB.size(); k++){
-							cout << "Trace: SetB["<<k<<"]=" << setB[k] << endl;
-						}
-					}
-				}
-				// cout << "SetA.size() = " <<setA.size() <<	" SetB.size() = "
-				// 			<< setB.size() << endl;
-
-			} else if(setA.empty() && !setB.empty()){ // can only choose from B
-				Cell a;
-				Cell b = setB.at(0);
-
-				if(siteType == b.getType() || b.getType().empty()){
-					//cout << "placing B " << b << " on site " << siteType<<endl;
-					newCellPlacement.emplace_back(b);
-					setB.erase(setB.begin());
-				} else {
-					cout << endl << endl;
-					cout << "CELL OPTION FROM B DID NOT MATCH SITE TYPE!!!!" << endl;
-					cout << "siteType = " <<siteType<<" cellTypeB = " << b.getType() << endl;
-					cout << endl;
-				}
-
-				// cout << "SetA.size() = " <<setA.size() <<	" SetB.size() = "
-				// 			<< setB.size() << endl;
-			} else if(!setA.empty() && setB.empty()){ // can only choose from A
-				Cell a = setA.at(0);
-				Cell b;
-
-				if(siteType == a.getType() || a.getType().empty()){
-					//cout << "placing A" << a <<" on site " << siteType<<endl;
-					newCellPlacement.emplace_back(a);
-					setA.erase(setA.begin());
-				} else {
-					cout << endl << endl;
-					cout << "CELL OPTION FROM A DID NOT MATCH SITE TYPE!!!!" << endl;
-					cout << "siteType = " <<siteType<<" cellTypeA = " << a.getType() << endl;
-					cout << endl;
-				}
-
-				// cout << "SetA.size() = " <<setA.size() <<	" SetB.size() = "
-				// 			<< setB.size() << endl;
-			} else {
-				cout << "Finished interleaving window!!!" << endl;
-			}
 		}
-		// cout <<"New Placement [";
-		// for (int k=0; k<newCellPlacement.size(); k++){
-		// 	cout << newCellPlacement[k].getName() << ",";
-		// }
-		// cout << "]" <<endl;
-
-		for (int k=0; k<newCellPlacement.size(); k++){
-			string cellName = newCellPlacement[k].getName();
-			if(!cellName.empty()){
-				Cell c = (*cellMap)[cellName];
-				c.setX(start+k);
-				(*cellMap)[cellName] = c;
-			}
-		}
-
 		setA.clear();
 		setB.clear();
 	}
