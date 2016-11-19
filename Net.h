@@ -4,6 +4,9 @@
 #include <string>
 #include <vector>
 #include <iostream>
+#include <unordered_map>
+
+#include "Cell.h"
 
 using namespace std;
 
@@ -13,6 +16,7 @@ public:
 	Net (const Net& net);
 	string getName ();
 	vector<string> getCellNames ();
+	int calculateHPWL (unordered_map<string, Cell>* cellMap);
 	friend ostream& operator<< (ostream& os, const Net& net);
 private:
 	string _name;

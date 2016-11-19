@@ -14,6 +14,8 @@ public:
 	void addCells (const unordered_map<string, Cell>::const_iterator& begin, const unordered_map<string, Cell>::const_iterator& end);
 	vector<Site> getRow (int row);
 	Site getSite (int row, int col);
+	int getRows ();
+	int getCols ();
 private:
 	int _rows;
 	int _cols;

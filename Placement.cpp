@@ -37,3 +37,10 @@ Site Placement::getSite (int row, int col) {
 	return _placement[row][col];
 }
 
+int Placement::getRows () {
+	return _rows;
+}
+
+int Placement::getCols () {
+	return _cols;
+}
