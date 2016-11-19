@@ -37,6 +37,37 @@ int calcHPWL(unordered_map<string, Net>* netMap, unordered_map<string, Cell>* ce
 		return hpwl;
 }
 
+int cost (Cell cell, int x, unordered_map<string, Net>* netMap,
+                unordered_map<string, Cell>* cellMap) {
+		int totalCost = 0;
+    vector<string> netNames = cell.getNetNames();
+
+    for (int n = 0; n < netNames.size(); n++) {
+        vector<string> cellNames = (*netMap)[netNames[n]].getCellNames();;
+        int cost = 0;
+        int x_max = 0;
+        int x_min = INT_MAX;
+                //cout << "Net: " << netNames[n] << endl;
+        for (int c = 0; c < cellNames.size(); c++) {
+        	if ( cellNames[c] != cell.getName() ) {
+        		Cell cell = (*cellMap)[cellNames[c]];
+        		//cout << "Cell: " << cell << endl;
+        		int _x = cell.getX();
+        		x_max = (_x > x_max) ? _x : x_max;
+        		x_min = (_x < x_min) ? _x : x_min;
+        	}
+        }
+        if (x > x_max)
+					{ cost = (x - x_max); }
+        if (x < x_min)
+					{ cost = (x_min - x); }
+
+        totalCost += cost;
+    }
+
+        return totalCost;
+}
+
 void interleave(vector<Site>* v, unordered_map<string, Cell> cellMap,
                 unordered_map<string, Net> netMap){
 	int length = v->size();
@@ -56,8 +87,10 @@ void interleave(vector<Site>* v, unordered_map<string, Cell> cellMap,
 		cout << "window= "<<j << " start:end = "<< start<< ":"<<end <<endl;
 
 		bool emptyWindow = true;
+		cout << "Current Placement [";
 		for(int i=start; i<end; i++){
 			string cellName = (*v)[i].getCellName();
+			cout << cellName << ",";
 			if(!cellName.empty() && i&1){
 				setA.emplace_back(cellMap[cellName]);
 				emptyWindow = false;
@@ -70,6 +103,7 @@ void interleave(vector<Site>* v, unordered_map<string, Cell> cellMap,
 				setB.emplace_back(Cell());
 			}
 		}
+		cout << "]" << endl;
 		//if window has no cells, then move on
 		if (emptyWindow) {
 			cout << "Found empty Window" << endl;
@@ -81,18 +115,88 @@ void interleave(vector<Site>* v, unordered_map<string, Cell> cellMap,
 			" SetB.size() = " << setB.size() << endl;
 		}
 		//start interleaving
+		vector<Cell> newCellPlacement;
 		for(int i=start; i<end; i++){
-			Cell a = setA.front();
-			Cell b = setB.front();
-			cout << "From A: " << a << endl;
-			cout << "From B: " << b << endl;
-			if(setA.size() > 0)
-				setA.erase(setA.begin());
-			if(setB.size() > 0)
+			int costA, costB;
+			if(!setA.empty() && !setB.empty()){
+				Cell a = setA.at(0);
+				Cell b = setB.at(0);
+				// cout << "From A: " << a << endl;
+				// cout << "From B: " << b << endl;
+				if(a.getName().empty() && b.getName().empty()){
+					if(setA.size() >= setB.size()){
+						newCellPlacement.emplace_back(a);
+						setA.erase(setA.begin());
+					} else {
+						newCellPlacement.emplace_back(b);
+						setB.erase(setB.begin());
+					}
+
+				} else if(a.getName().empty() && !b.getName().empty()){
+					costB = cost(b,i,&netMap,&cellMap);
+					int temp = cost(b,i+1,&netMap,&cellMap); //place empty cell first or second?
+					if(costB <= temp){
+						newCellPlacement.emplace_back(b);
+						setB.erase(setB.begin());
+					} else {
+						newCellPlacement.emplace_back(a);
+						setA.erase(setA.begin());
+					}
+
+				} else if(!a.getName().empty() && b.getName().empty()) {
+					costA = cost(a,i,&netMap,&cellMap);
+					int temp = cost(a,i+1,&netMap,&cellMap);
+					if(costA <= temp){
+						newCellPlacement.emplace_back(a);
+						setA.erase(setA.begin());
+					} else {
+						newCellPlacement.emplace_back(b);
+						setB.erase(setB.begin());
+					}
+
+				} else {
+					costA = cost(a,i,&netMap,&cellMap);
+					costB = cost(b,i,&netMap,&cellMap);
+					if(costA <= costB){
+						newCellPlacement.emplace_back(a);
+						setA.erase(setA.begin());
+					} else {
+						newCellPlacement.emplace_back(b);
+						setB.erase(setB.begin());
+					}
+				}
+
+
+
+				cout << "SetA.size() = " <<setA.size() <<	" SetB.size() = "
+							<< setB.size() << endl;
+			} else if(setA.empty() && !setB.empty()){ // can only choose from B
+				Cell a;
+				Cell b = setB.at(0);
+				// cout << "A is now empty: " << a << endl;
+				// cout << "From B: " << b << endl;
+				newCellPlacement.emplace_back(b);
 				setB.erase(setB.begin());
-			cout << "SetA.size() = " <<setA.size() <<
-			" SetB.size() = " << setB.size() << endl;
+				cout << "SetA.size() = " <<setA.size() <<	" SetB.size() = "
+							<< setB.size() << endl;
+			} else if(!setA.empty() && setB.empty()){ // can only choose from A
+				Cell a = setA.at(0);
+				Cell b;
+				// cout << "From A: " << a << endl;
+				// cout << "B is now empty: " << b << endl;
+				newCellPlacement.emplace_back(a);
+				setA.erase(setA.begin());
+				cout << "SetA.size() = " <<setA.size() <<	" SetB.size() = "
+							<< setB.size() << endl;
+			} else {
+				cout << "Finished interleaving window!!!" << endl;
+			}
 		}
+		cout <<"New placement [";
+		for (int k=0; k<newCellPlacement.size(); k++){
+			cout << newCellPlacement[k].getName() << ",";
+		}
+		cout << "]" <<endl;
 
 		setA.clear();
 		setB.clear();
@@ -125,7 +229,7 @@ int main (int argc, char* argv[]) {
 	}
 
 	//  Run Algorithm
-	vector<Site> v = placement.getRow(0);
+	vector<Site> v = placement.getRow(61);
 	// int hpwl = calcHPWL(&netMap, &cellMap);
 	// cout << "HPWL = " << hpwl << endl;
 	interleave(&v, cellMap, netMap);
