@@ -12,12 +12,9 @@
 #define WINDOW_SIZE 7
 using namespace std;
 
-struct Node{
-	int parent;
-	int left;
-	int right;
-	int nodeId;
+struct seq{
 	int cost;
+	vector<string> newCellList;
 };
 
 // Helper Functions
@@ -47,6 +44,9 @@ int calcHPWL(unordered_map<string, Net>* netMap, unordered_map<string, Cell>* ce
 int cost (Cell cell, int x, unordered_map<string, Net>* netMap,
                 unordered_map<string, Cell>* cellMap) {
 		int totalCost = 0;
+		if(cell.getName().empty()){
+			return 0;
+		}
     vector<string> netNames = cell.getNetNames();
 
     for (int n = 0; n < netNames.size(); n++) {
@@ -125,11 +125,42 @@ void interleave(vector<Site>* v, unordered_map<string, Cell>* cellMap,
 
 		//start interleaving
 		vector<Cell> newCellPlacement;
-		for(int i=start; i<end; i++){
-			int costA, costB;
-			string siteType = (*v)[i].getType();
+		seq seqInit = {.cost=0};
+		vector<vector<seq>> solutionMatrix(setB.size()+1,
+		 						vector<seq>(setA.size()+1, seqInit));
 
+	    int i_index,j_index,costA,costB;
+		for(int i=0;i<setB.size();i++){
+			for(int j=0;j<setA.size();j++){
+				if(i == 0 && j == 0) { continue; }
+				//clamp lower bound to 0
+				i_index = (i-1 < 0) ? 0 : i-1;
+				j_index = (j-1 < 0) ? 0 : j-1;
+				Cell a = setA[i_index];
+				Cell b = setB[j_index];
+				seq newItem;
+				seq prevI = solutionMatrix[i_index][j];
+				seq prevJ = solutionMatrix[i][j_index];
+				int xLocationA = prevI.newCellList.size()+1+start;
+				int xLocationB = prevJ.newCellList.size()+1+start;
+				string siteType = (*v)[start+i+j-1].getType();
+				costA = prevI.cost + cost(a,xLocationA,netMap,cellMap);
+				costB = prevJ.cost + cost(b,xLocationB,netMap,cellMap);
+
+
+				if(costA < costB){
+					vector<string> newSeq = prevI.newCellList;
+					newSeq.push_back(a.getName());
+					newItem = {.cost=costA, .newCellList=newSeq};
+				} else {
+					vector<string> newSeq = prevJ.newCellList;
+					newSeq.push_back(b.getName());
+					newItem = {.cost=costB, .newCellList=newSeq};
+				}
+				solutionMatrix[i][j] = newItem;
+			}
 		}
+
 		setA.clear();
 		setB.clear();
 	}
