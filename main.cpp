@@ -169,7 +169,7 @@ void interleave(vector<Site>* v, unordered_map<string, Cell>* cellMap,
 								costA = prevI.cost + abs(originalCost - temp);
 						}
 				} else { //empty cell
-						costA = 0;// + INT_MAX/DIVISOR;
+						costA = 0;// prevI.cost + INT_MAX/DIVISOR;
 				}
 
 				if(j == 0){ //non existant entry
@@ -185,7 +185,7 @@ void interleave(vector<Site>* v, unordered_map<string, Cell>* cellMap,
 								costB = prevJ.cost + abs(originalCost - temp);
 						}
 				} else { //empty cell
-						costB = 0;// + INT_MAX/DIVISOR;
+						costB = 0;//prevJ.cost + INT_MAX/DIVISOR;
 				}
 
 				// if(costA == INT_MAX && costB == INT_MAX){
@@ -193,45 +193,61 @@ void interleave(vector<Site>* v, unordered_map<string, Cell>* cellMap,
 				// }
 
 				if(a.getName().empty() && b.getName().empty()){
-						if(prevI.cost < prevJ.cost){ //TODO: this can be flipped
+						cout <<"CP #0" << endl;
+						if(costA < costB){ //TODO: this can be flipped
+							cout <<"Solution for S"<<i<<","<<j<<"= a"<<i<<endl;
 							vector<string> newSeq = prevI.newCellList;
 							newSeq.push_back(a.getName());
 							newItem = {.cost=prevI.cost, .newCellList=newSeq};
 						} else {
+							cout <<"Solution for S"<<i<<","<<j<<"= b"<<j<<endl;
 							vector<string> newSeq = prevJ.newCellList;
 							newSeq.push_back(b.getName());
 							newItem = {.cost=prevJ.cost, .newCellList=newSeq};
 						}
 				} else if(!a.getName().empty() && b.getName().empty()){
-						if(costA != INT_MAX){ //TODO: this can be flipped
+						cout <<"CP #1" << endl;
+						if(costA != INT_MAX){
+								cout <<"Solution for S"<<i<<","<<j<<"= a"<<i<<endl;
 								vector<string> newSeq = prevI.newCellList;
 								newSeq.push_back(a.getName());
 								newItem = {.cost=prevI.cost, .newCellList=newSeq};
 						} else {
-								//INVALID
+								//INVALID costA == INT_MAX
+								cout <<"Solution for S"<<i<<","<<j<<"= b"<<j<<endl;
 								vector<string> newSeq = prevJ.newCellList;
 								newSeq.push_back(b.getName());
 								newItem = {.cost=prevJ.cost, .newCellList=newSeq};
 						}
 				} else if(a.getName().empty() && !b.getName().empty()){
+						cout <<"CP #2" << endl;
+						int originalCost = cost(b,b.getX(),netMap,cellMap);
+						int temp = cost(b,xLocationB,netMap,cellMap);
+						int tempB = prevJ.cost + abs(originalCost - temp);
+						cout <<"originalCost="<<originalCost <<endl;
+						cout <<"temp= "<<temp <<endl;
+						cout <<"prevJ.cost = "<< prevJ.cost <<endl;
 						if(costB != INT_MAX){
+							cout <<"Solution for S"<<i<<","<<j<<"= b"<<j<<endl;
 							vector<string> newSeq = prevJ.newCellList;
 							newSeq.push_back(b.getName());
 							newItem = {.cost=costB, .newCellList=newSeq};
 						} else {
-							//INVALID
+							//INVALID costB == INT_MAX
+							cout <<"Solution for S"<<i<<","<<j<<"= a"<<i<<endl;
 							vector<string> newSeq = prevI.newCellList;
 							newSeq.push_back(a.getName());
 							newItem = {.cost=prevI.cost, .newCellList=newSeq};
 						}
 				} else {
+					cout <<"CP #3" << endl;
 					if(costA < costB){
-						//cout <<"Solution for S"<<i<<","<<j<<"= a"<<i<<endl;
+						cout <<"Solution for S"<<i<<","<<j<<"= a"<<i<<endl;
 						vector<string> newSeq = prevI.newCellList;
 						newSeq.push_back(a.getName());
 						newItem = {.cost=costA, .newCellList=newSeq};
 					} else {
-						//cout <<"Solution for S"<<i<<","<<j<<"= b"<<j<<endl;
+						cout <<"Solution for S"<<i<<","<<j<<"= b"<<j<<endl;
 						vector<string> newSeq = prevJ.newCellList;
 						newSeq.push_back(b.getName());
 						newItem = {.cost=costB, .newCellList=newSeq};
@@ -239,7 +255,7 @@ void interleave(vector<Site>* v, unordered_map<string, Cell>* cellMap,
 				}
 
 				solutionMatrix[i][j] = newItem;
-				//cout <<endl;
+				cout <<endl;
 			}
 		}
 		//write new location
@@ -262,7 +278,7 @@ void interleave(vector<Site>* v, unordered_map<string, Cell>* cellMap,
 		setA.clear();
 		setB.clear();
 	}
-	cout <<"cell count" <<counter <<endl;
+	cout <<"cell count=" <<counter <<endl;
 }
 
 // Algorithm Driver Function
@@ -298,7 +314,7 @@ int main (int argc, char* argv[]) {
 	//for(int i=0; i<placement.getRows(); i++){
 	for(int i=0; i<1; i++){
 		cout << "Interleaving row " << i << endl;
-		vector<Site> v = placement.getRow(0);
+		vector<Site> v = placement.getRow(37);
 		interleave(&v, &cellMap, &netMap);
 	}
 	hpwl = calcHPWL(&netMap, &cellMap);
