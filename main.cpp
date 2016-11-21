@@ -8,8 +8,10 @@
 #include "Site.h"
 #include "Placement.h"
 #include "Parser.h"
+#include <cmath>
 
 #define WINDOW_SIZE 7
+#define DIVISOR 8
 using namespace std;
 
 struct seq{
@@ -82,7 +84,7 @@ void interleave(vector<Site>* v, unordered_map<string, Cell>* cellMap,
 	int numWindows = (length/WINDOW_SIZE) + 1; //+1 for remainder
 	int remainderSites = length%WINDOW_SIZE;
 	vector<Cell> setA,setB;
-
+	int counter = 0;
 	for(int j=0;j<numWindows;j++){ //TODO: fix index
 		if(j*WINDOW_SIZE >= length){
 			start = j*WINDOW_SIZE;
@@ -91,7 +93,7 @@ void interleave(vector<Site>* v, unordered_map<string, Cell>* cellMap,
 			start = j*WINDOW_SIZE;
 			end = start+WINDOW_SIZE;
 		}
-		cout << "window= "<<j << " start:end = "<< start<< ":"<<end <<endl;
+		//cout << "window= "<<j << " start:end = "<< start<< ":"<<end <<endl;
 
 		bool emptyWindow = true;
 		//cout << "Current Placement [";
@@ -101,9 +103,11 @@ void interleave(vector<Site>* v, unordered_map<string, Cell>* cellMap,
 			if(!cellName.empty() && i&1){
 				setA.emplace_back((*cellMap)[cellName]);
 				emptyWindow = false;
+				counter++;
 			} else if(!cellName.empty()){
 				setB.emplace_back((*cellMap)[cellName]);
 				emptyWindow = false;
+				counter++;
 			} else if(cellName.empty() && i&1){
 				setA.emplace_back(Cell());
 			} else {
@@ -113,57 +117,152 @@ void interleave(vector<Site>* v, unordered_map<string, Cell>* cellMap,
 		//cout << "]" << endl;
 		//if window has no cells, then move on
 		if (emptyWindow) {
-			//cout << "Found empty Window" << endl;
+		//	cout << "Empty Window" << endl;
 			setA.clear();
 			setB.clear();
 			continue;
 		}
-		// } else {
-		// 	cout << "SetA.size() = " <<setA.size() <<
-		// 	" SetB.size() = " << setB.size() << endl;
-		// }
 
 		//start interleaving
 		vector<Cell> newCellPlacement;
 		seq seqInit = {.cost=0};
-		vector<vector<seq>> solutionMatrix(setB.size()+1,
-		 						vector<seq>(setA.size()+1, seqInit));
+		vector<vector<seq>> solutionMatrix(setA.size()+1,
+		 						vector<seq>(setB.size()+1, seqInit));
 
 	    int i_index,j_index,costA,costB;
-		for(int i=0;i<setB.size();i++){
-			for(int j=0;j<setA.size();j++){
+		for(int i=0;i<=setA.size();i++){
+			for(int j=0;j<=setB.size();j++){
+				//cout << "Analyzing sequence " <<i<<","<<j<<endl;
 				if(i == 0 && j == 0) { continue; }
 				//clamp lower bound to 0
 				i_index = (i-1 < 0) ? 0 : i-1;
 				j_index = (j-1 < 0) ? 0 : j-1;
 				Cell a = setA[i_index];
 				Cell b = setB[j_index];
+
+
 				seq newItem;
 				seq prevI = solutionMatrix[i_index][j];
 				seq prevJ = solutionMatrix[i][j_index];
 				int xLocationA = prevI.newCellList.size()+1+start;
 				int xLocationB = prevJ.newCellList.size()+1+start;
-				string siteType = (*v)[start+i+j-1].getType();
-				costA = prevI.cost + cost(a,xLocationA,netMap,cellMap);
-				costB = prevJ.cost + cost(b,xLocationB,netMap,cellMap);
+				// cout <<"A part is S"<<(i-1)<<","<<j<<"+a"<<i<<endl;
+				// cout <<"B part is S"<<i<<","<<(j-1)<<"+b"<<j<<endl;
+				// cout <<"siteType at " <<start+i+j-1 << endl;
+				int siteIndex = start+i+j-1;
+				string siteType = (*v)[siteIndex].getType();
 
+				// cout << "siteType: "<<siteType<<endl;
+				// cout << "a: " <<a.getType() << endl;
+				// cout << "b: "<<b.getType() << endl;
 
-				if(costA < costB){
-					vector<string> newSeq = prevI.newCellList;
-					newSeq.push_back(a.getName());
-					newItem = {.cost=costA, .newCellList=newSeq};
-				} else {
-					vector<string> newSeq = prevJ.newCellList;
-					newSeq.push_back(b.getName());
-					newItem = {.cost=costB, .newCellList=newSeq};
+				if(i == 0){ //non existant entry
+						costA = INT_MAX;
+				}	else if(siteType == a.getType()){
+						if(a.isFixed() && siteIndex !=  a.getX()){
+								// cout << "A: matching type but its fixed!!" << endl;
+								// cout << "siteIndex="<<siteIndex <<" a.x="<<a.getX()<<endl;
+								costA = INT_MAX;
+						} else {
+								int originalCost = cost(a,a.getX(),netMap,cellMap);
+								int temp = cost(a,xLocationA,netMap,cellMap);
+								costA = prevI.cost + abs(originalCost - temp);
+						}
+				} else { //empty cell
+						costA = 0;// + INT_MAX/DIVISOR;
 				}
+
+				if(j == 0){ //non existant entry
+						costB = INT_MAX;
+				} else if(siteType == b.getType()){
+						if(b.isFixed() && siteIndex != b.getX()){
+							  // cout << "B: matching type but its fixed!!" << endl;
+								// cout << "siteIndex="<<siteIndex <<" b.x="<<b.getX()<<endl;
+								costB = INT_MAX;
+						} else {
+								int originalCost = cost(b,b.getX(),netMap,cellMap);
+								int temp = cost(b,xLocationB,netMap,cellMap);
+								costB = prevJ.cost + abs(originalCost - temp);
+						}
+				} else { //empty cell
+						costB = 0;// + INT_MAX/DIVISOR;
+				}
+
+				// if(costA == INT_MAX && costB == INT_MAX){
+				// 	cout << "ZOMG i=" <<i<<" j="<<j<< endl;
+				// }
+
+				if(a.getName().empty() && b.getName().empty()){
+						if(prevI.cost < prevJ.cost){ //TODO: this can be flipped
+							vector<string> newSeq = prevI.newCellList;
+							newSeq.push_back(a.getName());
+							newItem = {.cost=prevI.cost, .newCellList=newSeq};
+						} else {
+							vector<string> newSeq = prevJ.newCellList;
+							newSeq.push_back(b.getName());
+							newItem = {.cost=prevJ.cost, .newCellList=newSeq};
+						}
+				} else if(!a.getName().empty() && b.getName().empty()){
+						if(costA != INT_MAX){ //TODO: this can be flipped
+								vector<string> newSeq = prevI.newCellList;
+								newSeq.push_back(a.getName());
+								newItem = {.cost=prevI.cost, .newCellList=newSeq};
+						} else {
+								//INVALID
+								vector<string> newSeq = prevJ.newCellList;
+								newSeq.push_back(b.getName());
+								newItem = {.cost=prevJ.cost, .newCellList=newSeq};
+						}
+				} else if(a.getName().empty() && !b.getName().empty()){
+						if(costB != INT_MAX){
+							vector<string> newSeq = prevJ.newCellList;
+							newSeq.push_back(b.getName());
+							newItem = {.cost=costB, .newCellList=newSeq};
+						} else {
+							//INVALID
+							vector<string> newSeq = prevI.newCellList;
+							newSeq.push_back(a.getName());
+							newItem = {.cost=prevI.cost, .newCellList=newSeq};
+						}
+				} else {
+					if(costA < costB){
+						//cout <<"Solution for S"<<i<<","<<j<<"= a"<<i<<endl;
+						vector<string> newSeq = prevI.newCellList;
+						newSeq.push_back(a.getName());
+						newItem = {.cost=costA, .newCellList=newSeq};
+					} else {
+						//cout <<"Solution for S"<<i<<","<<j<<"= b"<<j<<endl;
+						vector<string> newSeq = prevJ.newCellList;
+						newSeq.push_back(b.getName());
+						newItem = {.cost=costB, .newCellList=newSeq};
+					}
+				}
+
 				solutionMatrix[i][j] = newItem;
+				//cout <<endl;
 			}
 		}
+		//write new location
+		seq newPlacement = solutionMatrix[setA.size()][setB.size()];
+		//cout <<"new placement is ";
+		for (int i=0;i<setA.size()+setB.size();i++){
+				string cell = newPlacement.newCellList[i];
+				//cout << cell<<",";
+				if(!cell.empty()){
+					Cell c = (*cellMap)[cell];
+					cout <<"Original x for cell:"<<c.getName()<<"="<< c.getX()<<endl;
+					c.setX(start+i);
+					cout <<"cost: "<< newPlacement.cost <<endl;
+					cout <<"New x for cell:"<<c.getName()<<"="<< c.getX()<<endl <<endl;
+					(*cellMap)[cell] = c;
+ 				}
+		}
+		cout <<endl;
 
 		setA.clear();
 		setB.clear();
 	}
+	cout <<"cell count" <<counter <<endl;
 }
 
 // Algorithm Driver Function
@@ -196,9 +295,10 @@ int main (int argc, char* argv[]) {
 	int hpwl = calcHPWL(&netMap, &cellMap);
 	cout << "HPWL = " << hpwl << endl;
 
+	//for(int i=0; i<placement.getRows(); i++){
 	for(int i=0; i<1; i++){
 		cout << "Interleaving row " << i << endl;
-		vector<Site> v = placement.getRow(i);
+		vector<Site> v = placement.getRow(0);
 		interleave(&v, &cellMap, &netMap);
 	}
 	hpwl = calcHPWL(&netMap, &cellMap);
