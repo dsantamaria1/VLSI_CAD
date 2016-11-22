@@ -57,37 +57,62 @@ int calculateTotalHPWL (unordered_map<string, Cell>* cellMap,
 //													   //
 // Calculate Cost for Prefix Placement at a Given Site //
 //													   //
-int lp_cost (Cell cell, int x, unordered_map<string, Net>* netMap,
-		unordered_map<string, Cell>* cellMap) {
+int lp_cost (Cell cell, int x, unordered_map<string, int>* localXMap,
+		unordered_map<string, Net>* netMap, unordered_map<string, Cell>* cellMap) {
 	int totalCost = 0;
 	vector<string> netNames = cell.getNetNames();
-	
+/*
+	if ( !(*localXMap).empty() ) {
+		cout << "\nFor position " << x << "...\n";
+		for (auto it = (*localXMap).begin(); it != (*localXMap).end(); ++it) {
+			cout << (*cellMap)[it->first] << ", " << it->second << "\n";	
+		}
+	}
+*/
 	for (int n = 0; n < netNames.size(); n++) {
 		
 		Net net = (*netMap)[netNames[n]];
 		int cost = 0;
-	
-		// Only calculate cost if x is not in the net span
-//		cout << net.getXMin() << " " << net.getXMax() << endl;
-		if ( (x <= net.getXMin()) || (x >= net.getXMax()) ) {
+
+
+		if ( cell.getX() != net.getXMin() && x < net.getXMin() ) {
+			cost = net.getXMin() - x;
+		}
+		else if ( cell.getX() != net.getXMin() && x > net.getXMax() ) {
+			cost = x - net.getXMax();
+		}
+		else if ( (cell.getX() == net.getXMin() && cell.getX() == net.getXMax()) || 
+				(cell.getX() == net.getXMin() && x < net.getXMax()) || 
+				(cell.getX() == net.getXMax() && x > net.getXMin()) ) {
+		// Only calculate cost if x is not in the net span	
 			
-			vector<string> cellNames = net.getCellNames();;	
-	
+			vector<string> cellNames = net.getCellNames();
+			
 			int x_max = 0;
 			int x_min = INT_MAX;
-			//cout << "Net: " << netNames[n] << endl;
+			//cout << "Net: " << netNames[n] << "\n";
 			for (int c = 0; c < cellNames.size(); c++) {
 				if ( cellNames[c] != cell.getName() ) {
-					Cell cell = (*cellMap)[cellNames[c]];
-					//cout << "Cell: " << cell << endl;
-					int _x = cell.getX();
+					int _x;
+					auto it = (*localXMap).find(cellNames[c]);
+					
+					if ( (*localXMap).empty() || it == (*localXMap).end() ) {
+						_x = (*cellMap)[cellNames[c]].getX();
+					
+					} else if ( it != (*localXMap).end() ) {
+//						cout << "Using Cell: " << it->first << ", ";
+//						cout << it->second << " for Net: " << net.getName() << "\n";
+						
+						_x = (it->second);	
+					}
+
 					x_max = (_x > x_max) ? _x : x_max;
 					x_min = (_x < x_min) ? _x : x_min;
 				}
 			}
-			if (x > x_max) { cost = (x - x_max); }
-			if (x < x_min) { cost = (x_min - x); }
-		}
+			if (x > x_max) { cost = (x - x_max); x_max = x; }
+			if (x < x_min) { cost = (x_min - x); x_min = x; }
+		} 
 
 		totalCost += cost;
 	}
@@ -104,16 +129,23 @@ int lp_cost (Cell cell, int x, unordered_map<string, Net>* netMap,
 void lp_algorithm (int pickedRow, Placement* placement, 
 		unordered_map<string, Cell>* cellMap, unordered_map<string, Net>* netMap) {
 	
-	cout << endl << "Beginning Linear Placement algorithm..." << endl;
+	cout << "\n" << "Beginning Linear Placement algorithm..." << "\n" << "\n";
 	// Start by picking an arbitrary row. Let's pick the first one
 	int rows = (*placement).getRows();
 	int cols = (*placement).getCols();
 	int row = pickedRow;
 	vector<Site> siteRow = (*placement).getRow(row);
-
-	cout << "Cells included in this row include: " << endl;	
+/*
+	cout << "Sites included in this row include: " << "\n" << "\n";	
+	for (int i = 0; i < siteRow.size(); i++) {
+		Site site = siteRow.at(i);
+		cout << site << "\n";
+	}
+*/
+	cout << "Cells included in this row include: " << "\n";	
 	// Collect all cells in the row, agnostic of original placement
 	vector<Cell> cells;
+
 	for (int i = 0; i < siteRow.size(); i++) {
 		Site site = siteRow.at(i);
 		string cellName = site.getCellName();
@@ -121,14 +153,15 @@ void lp_algorithm (int pickedRow, Placement* placement,
 		if ( !cellName.empty() ) { 
 			Cell cell = (*cellMap)[cellName];
 			cells.emplace_back(cell);
-			cout << cell << endl; 	
+//			cout << cell << "\n"; 	
 		}
 	}                			
-	cout << "Total Number of Cells: " << cells.size() << endl;
+//	cout << "Total Number of Cells: " << cells.size() << "\n\n";
 	
 	// Initialize vector of Solution object, with location mincost and 
 	// 		best possible site location relative to the given site
-	Solution initSol = { INT_MAX/(rows+1), -1 };		
+	int bigInt = INT_MAX/(rows+1);
+	Solution initSol = { bigInt, -1 };		
 	vector<vector<Solution>> solutionMatrix (cells.size(), 
 		vector<Solution>(siteRow.size(), initSol));
 	
@@ -138,7 +171,7 @@ void lp_algorithm (int pickedRow, Placement* placement,
 	int costOverheadTicks = 0;
 	unsigned int costFunctionCalls = 0;
 
-	cout << endl << "Generating solution matrix for cells and sites..." << endl;
+//	cout << "Generating solution matrix for cells and sites..." << "\n";
 	general_t = clock();	
 
 
@@ -147,21 +180,24 @@ void lp_algorithm (int pickedRow, Placement* placement,
 		Cell curCell = cells.at(c);
 		int cost = 0;
 		int fixedSite = 0;	
-			
-		cout << "Now updating solution matrix for " << curCell.getName();
-		cout << " (" << (c+1) << " of " << numCells << ")..." << endl;
+		unordered_map<string, int> localXMap;
+	
+//		cout << "Now updating solution matrix for " << curCell.getName();
+//		cout << " (" << (c) << " - " << numCells-1 << ")..." << "\n";
 
 		// Fixed Cell Handler
 		if ( curCell.isFixed() )  {		
 			cost_t = clock();
-			cost = lp_cost( curCell, curCell.getX(), netMap, cellMap );			
+			
+			cost = lp_cost( curCell, curCell.getX(), &localXMap, netMap, cellMap );
+			
 			costOverheadTicks += (clock() - cost_t);	
 			costFunctionCalls++;
 
 			fixedSite = curCell.getX();
 			Solution fixedSol = {cost, curCell.getX()};	
 				
-			std::fill (solutionMatrix[c].begin()+fixedSite,
+			std::fill (solutionMatrix[c].begin() + fixedSite,
 				 solutionMatrix[c].end(), fixedSol);
 		// General Movable Cell Handler
 		} else {
@@ -169,16 +205,42 @@ void lp_algorithm (int pickedRow, Placement* placement,
 			int firstSite = ((fixedSite+1) > c) ? (fixedSite+1) : c;
 			for (int s = firstSite; s < (siteRow.size()); s++) {
 				
-				int siteCost = INT_MAX/(rows+1);	
-
+				int siteCost = bigInt;	
+	
+				// Check for type mismatches	
 				if ( siteRow[s].getType() == curCell.getType() ) {
-					cost_t = clock();	
-					siteCost = lp_cost( curCell, s, netMap, cellMap );
+					cost_t = clock();
+				
+					// Generate accurate cell locations for current best solution
+					int lastSite = s-1;		
+				
+					for (int i = c; i > 0; i--) { 
+						string pastName = cells[i-1].getName();
+						int pastSite = solutionMatrix[i-1][lastSite].site;
+						if (pastSite < 0) { break; }
+						localXMap[ pastName ] = pastSite;
+						lastSite = pastSite-1;
+					}	
+					
+					siteCost = lp_cost( curCell, s, &localXMap, netMap, cellMap );
 					costOverheadTicks += (clock() - cost_t);
 					costFunctionCalls++;
+				} else {
+//					cout << "S: " << s << ", C: " << c << "\n";
+					if ( s == c ) {
+						solutionMatrix[c][s].cost = siteCost;
+						solutionMatrix[c][s].site = s;	
+					} else {
+						int lastCost = solutionMatrix[c][s-1].cost;	
+						int lastSite = solutionMatrix[c][s-1].site;	
+						solutionMatrix[c][s].cost = lastCost;
+						solutionMatrix[c][s].site = lastSite;
+					}
+					continue;
 				}
+
 	
-				//cout << "cost(" << s << "): " << siteCost << endl; 		
+				//cout << "cost(" << s << "): " << siteCost << "\n"; 		
 
 				// The first cell considers only its best position
 				if ( c == 0 ) {
@@ -190,19 +252,35 @@ void lp_algorithm (int pickedRow, Placement* placement,
 					// Checks if previous cost is better
 					} else {
 						int lastCost = solutionMatrix[c][s-1].cost;	
-
-						if (lastCost < siteCost) {
-							solutionMatrix[c][s].cost = lastCost;
-							solutionMatrix[c][s].site = s-1;
-						} else {
+						int lastSite = solutionMatrix[c][s-1].site;	
+					
+						//cout << siteCost << " vs " << lastCost << "\n";	
+						// Approaching min point
+						if (siteCost < lastCost) {
 							solutionMatrix[c][s].cost = siteCost;
 							solutionMatrix[c][s].site = s;
+						// Extending local region or min point
+						} else if (siteCost == lastCost) {
+							solutionMatrix[c][s].cost = siteCost;
+							solutionMatrix[c][s].site = s;
+//							solutionMatrix[c][s].cost = lastCost;
+//							solutionMatrix[c][s].site = lastSite;
+						} else if (siteCost > lastCost) {
+//							solutionMatrix[c][s].cost = lastCost;
+//							solutionMatrix[c][s].site = lastSite;
+							Solution lastSol = {lastCost, lastSite};
+							std::fill (solutionMatrix[c].begin() + s,
+							 solutionMatrix[c].end(), lastSol); 
+//							cout << "//SNICKERS//" << "\n";
+							break;
 						}
 
 					}
 				// If considering a cell after first, we must consider past cells
 				} else {
 					int thisCost = solutionMatrix[c-1][s-1].cost + siteCost;
+					thisCost = std::min(thisCost, bigInt);				
+
 					// If we're considering the first site, use past cell first
 					//   location and cost of current cell first site
 					if ( s == c ) {
@@ -213,17 +291,27 @@ void lp_algorithm (int pickedRow, Placement* placement,
 						int lastCost = solutionMatrix[c][s-1].cost;	
 						int lastSite = solutionMatrix[c][s-1].site;	
 
-						if (lastCost < thisCost) {
-							solutionMatrix[c][s].cost = lastCost;
-							solutionMatrix[c][s].site = lastSite; 
-						} else {
+						if (thisCost < lastCost) {
 							solutionMatrix[c][s].cost = thisCost;
 							solutionMatrix[c][s].site = s;
+						} else if (thisCost == lastCost) {
+							solutionMatrix[c][s].cost = thisCost;
+							solutionMatrix[c][s].site = s;
+//							solutionMatrix[c][s].cost = lastCost;
+//							solutionMatrix[c][s].site = lastSite;
+						} else if (thisCost > lastCost) {
+//							solutionMatrix[c][s].cost = lastCost;
+//							solutionMatrix[c][s].site = lastSite;
+							Solution lastSol = {lastCost, lastSite};
+							std::fill (solutionMatrix[c].begin() + s,
+							 solutionMatrix[c].end(), lastSol); 
+//							cout << "//SNICKERS//" << "\n";
+							break;
 						}
 					}
 				}
 			
-				//cout << "minCost: " << solutionMatrix[c][s].cost << endl;
+				//cout << "minCost: " << solutionMatrix[c][s].cost << "\n";
 				// end of site loop
 			}
 			// end of fixed cell conditional
@@ -232,13 +320,13 @@ void lp_algorithm (int pickedRow, Placement* placement,
 			for (int s = 0; s < solutionMatrix[c].size(); s++) { 
 				cout << solutionMatrix[c][s].cost << " "; 
 			}
-			cout << "]" << endl;
+			cout << "]" << "\n";
 			
 			cout << "Site: [ ";
 			for (int s = 0; s < solutionMatrix[c].size(); s++) { 
 				cout << solutionMatrix[c][s].site << " "; 
 			}
-			cout << "]" << endl << endl;
+			cout << "]" << "\n" << "\n";
 */
 		}		
 		// end of cell loop
@@ -247,48 +335,60 @@ void lp_algorithm (int pickedRow, Placement* placement,
 
 
 	div_t matrixTime = div ( (clock() - general_t) / (double) CLOCKS_PER_SEC, 60 );	
-	cout << endl << "Linear Placement Matrix Creation Time: ";
-	cout << matrixTime.quot << " minutes, " << matrixTime.rem << " seconds" << endl;
+	cout << "Linear Placement Matrix Creation Time: ";
+	cout << matrixTime.quot << " minutes, " << matrixTime.rem << " seconds" << "\n";
 
 	div_t costTime = div ( costOverheadTicks / (double) CLOCKS_PER_SEC, 60 );	
 	double costAvgTime = ( costOverheadTicks / (double) costFunctionCalls / 
 		(double) CLOCKS_PER_SEC * 1000.0 );
-	cout << endl << "Linear Placement Cost Overhead Time: ";
-	cout << costTime.quot << " minutes, " << costTime.rem << " seconds" << endl;
+	cout << "Linear Placement Cost Overhead Time: ";
+	cout << costTime.quot << " minutes, " << costTime.rem << " seconds" << "\n";
 	
-	cout << endl << "Linear Placement Cost Average Time: ";
-	cout << costAvgTime << " milliseconds" << endl;
-	cout << "Number of lp_cost() calls: " << costFunctionCalls << endl;
+	cout << "Linear Placement Cost Average Time: ";
+	cout << costAvgTime << " milliseconds" << "\n";
+	cout << "Number of lp_cost() calls: " << costFunctionCalls << "\n";
 	
 	int c = cells.size() - 1;
 	int s = siteRow.size() - 1;
 	vector<int> finalCellLocations (cells.size());	
 
 
-	cout << endl << "Traversing the solution matrix..." << endl;	
+	cout << "Traversing the solution matrix..." << "\n";	
 	general_t = clock();
 	// Traverse the solution matrix to determine the best cell locations for a given
 	//		siteRow and given initial cell list
 	while (c >= 0) {
 		int cost = solutionMatrix[c][s].cost;
-
-		while ( (s != 0) && (cost == solutionMatrix[c][s-1].cost) ) { s--; }
-		
+	
+		while ( (s != 0) && (cost == solutionMatrix[c][s-1].cost) ) {
+/*			cout << "[" << solutionMatrix[c][s].cost << ", "; 
+			cout << solutionMatrix[c][s].site << "]" << " vs " << "[";
+			cout << solutionMatrix[c][s-1].cost << ", ";
+			cout << solutionMatrix[c][s-1].site << "]" << "\n"; 
+*/			s--;
+		}
+	
+//		cout << "Cell: " << c << " ; Site: " << s;
+//		cout << " <==> " << solutionMatrix[c][siteRow.size()-1].site << "\n";	
 		finalCellLocations[c] = s;	
 		s--; c--;
 	}
-
+/*	
+	cout << "\n" << "[ ";
+	for (int i = 0; i < cells.size(); i++) { cout << cells[i].getX() << " "; }
+	cout << "]" << "\n";
+	cout << "==>" << "\n";
 	cout << "[ ";
 	for (int pos : finalCellLocations) { cout << pos << " "; }
-	cout << "]" << endl;
-
+	cout << "]" << "\n";
+*/
 		
 	div_t travTime = div ( (clock() - general_t) / (double) CLOCKS_PER_SEC, 60);	
-	cout << endl << "Linear Placement Solution Traversal Time: ";
-	cout << travTime.quot << " minutes, " << travTime.rem << " seconds" << endl;
+	cout << "Linear Placement Solution Traversal Time: ";
+	cout << travTime.quot << " minutes, " << travTime.rem << " seconds" << "\n";
 
 
-	cout << endl << "Updating cellMap for HPWL calculations..." << endl;
+	cout << "Updating cellMap for HPWL calculations..." << "\n";
 	// Updating the cellMap for each cell changed in the siteRow
 	for (int i = 0; i < cells.size(); i++) {
 		cells[i].setX( finalCellLocations[i] );
@@ -310,7 +410,9 @@ int main (int argc, char* argv[]) {
 	// Generate Parser and parse all input files
 	string filepath = argv[1];
 	string filename = argv[2];
-//	int pickedRow = stoi(argv[3]);
+	int init_row = stoi(argv[3]);
+	int end_row = stoi(argv[4]);
+	if (end_row - init_row < 0) { cout << "Bad row range" << "\n"; abort(); }
 	Parser parser = Parser(filepath, filename);
 	vector<vector<Site>> sitemap = parser.parseSitemap();	
 	unordered_map<string, Net> netMap = parser.parseNetlist();
@@ -345,33 +447,34 @@ int main (int argc, char* argv[]) {
 
 	// Check Total HPWL	before algorithm
 	int beginHPWL = calculateTotalHPWL(&cellMap, &netMap);
-	cout << endl << "Initial HPWL: " << beginHPWL << endl << endl; 
+	cout << "\n" << "Initial HPWL: " << beginHPWL << "\n"; 
 
 	
 	clock_t main_t, total_t;
 
 	total_t = clock();	
-	for (int r = 0; r < rows; r++) {
+	for (int r = init_row; r < end_row; r++) {
 		// Run Algorithm
-		cout << "Picking Row " << r << " for Linear Placement..." << endl;
+		//int r = pickedRow;
+		cout << "\n" << "Picking Row " << r << " for Linear Placement..." << "\n";
 
 		main_t = clock();
 		lp_algorithm(r, &placement, &cellMap, &netMap);	
 		div_t algoTime = div ( (clock() - main_t) / (double) CLOCKS_PER_SEC, 60);	
-		cout << endl << "Current Linear Placement Algorithm Time: ";
-		cout << algoTime.quot << " minutes, " << algoTime.rem << " seconds" << endl;
+		cout << "\n" << "Current Linear Placement Algorithm Time: ";
+		cout << algoTime.quot << " minutes, " << algoTime.rem << " seconds" << "\n";
 	
 	}
 		
 	div_t totalTime = div ( (clock() - total_t) / (double) CLOCKS_PER_SEC, 60);	
-	cout << endl << "Total Linear Placement Algorithm Time: ";
-	cout << totalTime.quot << " minutes, " << totalTime.rem << " seconds" << endl;
+	cout << "\n" << "Total Linear Placement Algorithm Time: ";
+	cout << totalTime.quot << " minutes, " << totalTime.rem << " seconds" << "\n";
 
 
 	// Check Total HPWL	after algorithm
 	int endHPWL = calculateTotalHPWL(&cellMap, &netMap);
 	double improvement = 100 * (beginHPWL - endHPWL) / (double)(beginHPWL);
-	cout << endl << "Final HPWL: " << endHPWL << endl; 
-	cout << "HPWL Improvement: " << improvement << "%" << endl << endl;
+	cout << "\n" << "Final HPWL: " << endHPWL << "\n"; 
+	cout << "HPWL Improvement: " << improvement << "%" << "\n" << "\n";
 }
 
