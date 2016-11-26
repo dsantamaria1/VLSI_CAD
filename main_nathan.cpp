@@ -1,7 +1,10 @@
 #include <string>
 #include <vector>
-#include <iostream>
 #include <unordered_map>
+#include <iostream>
+#include <algorithm>
+#include <tuple>
+#include <ctime>
 
 #include "Net.h"
 #include "Cell.h"
@@ -12,55 +15,75 @@
 using namespace std;
 
 
-// Helper Functions
-void test_parser_objects (vector<vector<Site>> sm, unordered_map<string, Cell> cm,
-		unordered_map<string, Net> nm) {
-	cout << sm[0][0] << endl;
-	auto it_cell = cm.begin();
-	cout << it_cell->first << " : " << it_cell->second << endl;
-	auto it_net = nm.begin();
-	cout << it_net->first << " : " << it_net->second << endl;	
-}
+struct Solution {
+	int cost;
+	int site;
+};
 
 
-void test_site_creation () {
-	Site site0 = Site(0, 0, "CLB");
-	Cell cell0 = Cell("cell0", "CLB", 0, 0, "M");
-	site0.addCell( cell0.getName() );
+
+
+//													//
+// Method to Calculate HPWL to Benchmark Algorithms //
+//													//
+int calculateTotalHPWL (unordered_map<string, Cell>* cellMap, 
+		unordered_map<string, Net>* netMap) {
+	int hpwl = 0;
 	
-	Cell cell1 = Cell("cell1", "CLB", 0, 1, "M");
-	Site site1 = Site(0, 1, "CLB", cell1.getName());
-
-	cout << site0 << endl;
-	cout << site1 << endl;
-}
-
-void test_placement_creation (Placement placement, 
-		unordered_map<string, Cell> cellMap, int x, int y) {
-	Site site00 = placement.getSite(x, y);
-	string cellName = site00.getCellName();
-	Cell cell00 = Cell(cellMap[ cellName ]);
-	cout << "Cell Name: " << cellName << endl;
-	cout << site00 << " : " << cell00 << endl;		
-}
-
-
-void lp_algorithm (Placement placement, 
-		unordered_map<string, Cell> cellMap, unordered_map<string, Net> netMap) {
-	// Start by picking an arbitrary row. Let's pick the first one
-	int row = 0;
-	vector<Site> siteRow = placement.getRow(row);
-			
-}
-
-int lp_cost () {
-	return 0;
+	for (auto it = (*netMap).begin(); it != (*netMap).end(); ++it) {
+		vector<string> cellNames = (it->second).getCellNames();
+		int x_max = 0;
+		int y_max = 0;
+		int x_min = INT_MAX;
+		int y_min = INT_MAX;	
+	
+		for (int i = 0; i < cellNames.size(); i++) {
+			int x = (*cellMap)[cellNames[i]].getX();
+			int y = (*cellMap)[cellNames[i]].getY();
+			x_max = (x > x_max) ? x : x_max;
+			x_min = (x < x_min) ? x : x_min;
+			y_max = (y > y_max) ? y : y_max;
+			y_min = (y < y_min) ? y : y_min;
+		}
+		hpwl += abs(x_max - x_min) + abs(y_max - y_min);
+	}
+	
+	return hpwl;
 }
 
 
 
-// Algorithm Driver Function
+
+//									//
+// Calculate Cost for a Global Swap	//
+//									//
+int global_swap_cost (Cell cell, int x, unordered_map<string, int>* localXMap,
+		unordered_map<string, Net>* netMap, unordered_map<string, Cell>* cellMap) {
+	int totalCost = 0;
+	vector<string> netNames = cell.getNetNames();
+
+}
+
+
+
+
+//					    //
+// Global Swap Function //
+//						//
+void global_swap_algorithm (int pickedRow, Placement* placement, 
+		unordered_map<string, Cell>* cellMap, unordered_map<string, Net>* netMap) {
+
+}	
+
+
+
+//							 //
+//							 //
+// Algorithm Driver Function //
+//							 //
+//							 //
 int main (int argc, char* argv[]) {
+	
 	// Generate Parser and parse all input files
 	string filepath = argv[1];
 	string filename = argv[2];
@@ -68,7 +91,19 @@ int main (int argc, char* argv[]) {
 	vector<vector<Site>> sitemap = parser.parseSitemap();	
 	unordered_map<string, Net> netMap = parser.parseNetlist();
 	unordered_map<string, Cell> cellMap = parser.parsePlacement();
+	
+	int rows = sitemap.size();
+	int cols = sitemap[0].size();
 
+	// Initialize nets with bounding box parameters
+	for (auto it_net = netMap.begin(); it_net != netMap.end(); ++it_net) {
+ 		string name = (it_net->first);
+		Net net = (it_net->second);
+		net.setBoundingBox (&cellMap);
+		netMap[name] = net;
+	}	
+
+	
 	// Initialize cells in cellMap to include net names
 	for (auto it_net = netMap.begin(); it_net != netMap.end(); ++it_net) {
 		Net net = (it_net->second);
@@ -78,18 +113,41 @@ int main (int argc, char* argv[]) {
 			string cellName = (*it_cell);
 			(cellMap[cellName]).addNet(net.getName());	
 		}
-	}		
-	cout << cellMap["cell_0"] << endl;
-
+	}	
 	
 	// Initialize placement of FPGA sites
-	int rows = sitemap.size();
-	int cols = sitemap[0].size();
 	Placement placement = Placement(rows, cols, sitemap);
 	placement.addCells( cellMap.begin(), cellMap.end() );	
 
-	// Run Algorithm
-//	linear_placement_algorithm(placement, cellMap, netMap);
+	// Check Total HPWL	before algorithm
+	int beginHPWL = calculateTotalHPWL(&cellMap, &netMap);
+//	cout << "\n" << "Initial HPWL: " << beginHPWL << "\n"; 
+
 	
+	clock_t main_t, total_t;
+
+	total_t = clock();	
+	//for (int r = init_row; r < end_row; r++) {
+		// Run Algorithm
+//		cout << "\n" << "Picking Row " << r << " for Linear Placement..." << "\n";
+
+		main_t = clock();
+		global_swap_algorithm(&placement, &cellMap, &netMap);	
+		div_t algoTime = div ( (clock() - main_t) / (double) CLOCKS_PER_SEC, 60);	
+//		cout << "\n" << "Current Linear Placement Algorithm Time: ";
+//		cout << algoTime.quot << " minutes, " << algoTime.rem << " seconds" << "\n";
+	
+	//}
+		
+	div_t totalTime = div ( (clock() - total_t) / (double) CLOCKS_PER_SEC, 60);	
+//	cout << "\n" << "Total Linear Placement Algorithm Time: ";
+//	cout << totalTime.quot << " minutes, " << totalTime.rem << " seconds" << "\n";
+
+
+	// Check Total HPWL	after algorithm
+	int endHPWL = calculateTotalHPWL(&cellMap, &netMap);
+	double improvement = 100 * (beginHPWL - endHPWL) / (double)(beginHPWL);
+//	cout << "\n" << "Final HPWL: " << endHPWL << "\n"; 
+//	cout << "HPWL Improvement: " << improvement << "%" << "\n" << "\n";
 }
 

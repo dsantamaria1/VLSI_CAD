@@ -32,7 +32,11 @@ string Cell::getType () { return _type; }
 	
 int Cell::getX () { return _x; }
 
+void Cell::setX (int newX) { _x = newX; }
+
 int Cell::getY () { return _y; }
+
+void Cell::setY (int newY) { _y = newY; }
 
 bool Cell::isFixed () { 
 	if (_fixed == "F") { return true; }
@@ -54,8 +58,8 @@ vector<string> Cell::getNetNames () {
 
 ostream& operator <<(ostream& os, const Cell& cell) {
 	os << "{" << cell._name << ", " << cell._type << ", " << cell._x << ", " 
-		<< cell._y << ", " << cell._fixed;
-	vector<string> netNames = cell._netNames; 
+		<< cell._y << ", " << cell._fixed << "}";
+/*	vector<string> netNames = cell._netNames; 
 	if ( netNames.empty() ) { os << ", []}"; }
 	else { 
 		os << ", [";
@@ -65,7 +69,7 @@ ostream& operator <<(ostream& os, const Cell& cell) {
 		}
 		os << "]}";
 	}
-	
+*/	
 	return os;
 }
 

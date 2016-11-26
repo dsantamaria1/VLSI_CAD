@@ -30,6 +30,10 @@ void Site::addCell (string cellName) {
 	_cellName = cellName; 	
 }
 
+string Site::getType () {
+	return _type;
+}
+
 string Site::getCellName () {
 	return _cellName;
 }
