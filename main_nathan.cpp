@@ -22,6 +22,12 @@ struct Solution {
 
 
 
+void checkOverlap () {
+
+}
+
+
+
 //													//
 // Method to Calculate HPWL to Benchmark Algorithms //
 //													//
@@ -110,24 +116,23 @@ tuple<int, int, int, int> get_optimal_region (Cell cell,
 	
 		Net net = (*netMap)[netNames[n]];	
 		
-/*
-		if ( cell.getX() != net.getXMin() && x < net.getXMin() ) {
-			cost = net.getXMin() - x;
-		}
-		else if ( cell.getX() != net.getXMin() && x > net.getXMax() ) {
-			cost = x - net.getXMax();
-		}
-		else if ( (cell.getX() == net.getXMin() && cell.getX() == net.getXMax()) ||
-				(cell.getX() == net.getXMin() && x < net.getXMax()) ||
-				(cell.getX() == net.getXMax() && x > net.getXMin()) ) {
+		int x_min = net.getXMin();
+		int x_max = net.getXMax();
+		int y_min = net.getYMin();
+		int y_max = net.getYMax();
+
+		if ( cell.getX() != net.getXMin() && cell.getX() != net.getXMax() 
+				&& cell.getY() != net.getYMin() && cell.getY() != net.getYMax() ) {
+	
+		} else {
 		// Only calculate cost if x is not in the net span
-*/		
+		
 			vector<string> cellNames = net.getCellNames();
 			
-			int x_min = INT_MAX;
-			int x_max = 0;
-			int y_min = INT_MAX;
-			int y_max = 0;
+			x_min = INT_MAX;
+			x_max = 0;
+			y_min = INT_MAX;
+			y_max = 0;
 			
 			for (int c = 0; c < cellNames.size(); c++) {
 				int _x = (*cellMap)[cellNames[c]].getX();
@@ -141,7 +146,7 @@ tuple<int, int, int, int> get_optimal_region (Cell cell,
 				}
 				
 			}
-//		}
+		}
 
 		xBounds.emplace_back(x_min);
 		xBounds.emplace_back(x_max);
@@ -165,8 +170,8 @@ tuple<int, int, int, int> get_optimal_region (Cell cell,
 	if ( yBounds.size() % 2 == 1 ) {
 		topBound = bottomBound = yBounds[y_mid];
 	} else {
-		topBound = yBounds[y_mid];
-		bottomBound = yBounds[y_mid - 1];
+		bottomBound = yBounds[y_mid];
+		topBound = yBounds[y_mid - 1];
 	}
 
  
@@ -184,9 +189,13 @@ void global_swap_algorithm (Placement* placement,
 	
 	// Loop through every cell in cell map and try to swap it into its
 	//   optimal region	
+	int cellsDone = 0;
+	int totalCells = (*cellMap).size();
 	for (auto it = (*cellMap).begin(); it != (*cellMap).end(); ++it) {
 		Cell cell =	(it->second);
-//		cout << "Running global swap for " << cell << "\n";
+		cout << "Running global swap for cell " << cellsDone << " of ";
+		cout << totalCells << "\n";
+		cellsDone++;
 	
 		// If cell is fixed, we can't swap it, so move to next cell
 		if ( cell.isFixed() ) { continue; }
@@ -196,56 +205,76 @@ void global_swap_algorithm (Placement* placement,
 		int topBound, bottomBound, leftBound, rightBound;
 		std::tie(topBound, bottomBound, leftBound, rightBound) 
 			= get_optimal_region(cell, cellMap, netMap);
+//		cout << "Bounds are X: (" << leftBound << ", " << rightBound << ") & Y: (";
+//		cout << topBound << ", " << bottomBound << ")\n"; 
 
 		// Create list of sites to try to swap with in the optimal region
 		vector<tuple<int, int>> boxPoints;
 		if (topBound == bottomBound && leftBound == rightBound) { 
 			boxPoints.emplace_back( make_tuple(leftBound, bottomBound) ); 
 		} else if (topBound == bottomBound) {
-			boxPoints.emplace_back( make_tuple(leftBound, topBound) ); 
-			boxPoints.emplace_back( make_tuple(rightBound, topBound) ); 
+			for (int x = leftBound; x <= rightBound; x++) {
+				boxPoints.emplace_back( make_tuple(x, topBound) ); 
+			}
+		// Note that larger y values correspond with lower cells in placement
 		} else if (leftBound == rightBound) {
-			boxPoints.emplace_back( make_tuple(leftBound, topBound) ); 
-			boxPoints.emplace_back( make_tuple(leftBound, bottomBound) ); 
+			for (int y = topBound; y <= bottomBound; y++) {
+				boxPoints.emplace_back( make_tuple(leftBound, y) ); 
+			}
 		} else {
-			boxPoints.emplace_back( make_tuple(leftBound, topBound) ); 
-			boxPoints.emplace_back( make_tuple(leftBound, bottomBound) ); 
-			boxPoints.emplace_back( make_tuple(rightBound, topBound) ); 
-			boxPoints.emplace_back( make_tuple(rightBound, bottomBound) ); 
+			for (int x = leftBound; x <= rightBound; x++) {
+				for (int y = topBound; y <= bottomBound; y++) {
+					boxPoints.emplace_back( make_tuple(x, y) ); 
+				}
+			}
 		}
-		
+//		cout << "Points in optimal region: " << boxPoints.size() << "\n";
+				
 		// Investigate each optimal region point
 		// Currently this just checks the corners of the optimal region
-		vector<Cell> swapList;
+
+		int initCellHPWL = calculateCellHPWL(cell, cellMap, netMap);
 		for (int p = 0; p < boxPoints.size(); p++ ) {
 			int x_new, y_new;
 			std::tie(x_new, y_new) = boxPoints[p];
-			Site site = (*placement).getSite(x_new, y_new);
+			Site site = (*placement).getSite(y_new, x_new);
+			
+			if ( site.getType() != cell.getType() ) {
+				// Cells cannot be placed into invalid sites
+				continue;	
+			}
 			
 			// Check if cell exists in location
 			string otherCellName = site.getCellName();
+
 			if ( otherCellName == "" ) {
 				// Determine whether swapping cell into space is worth it
-				int initHPWL = calculateCellHPWL(cell, cellMap, netMap);
+				int initHPWL = initCellHPWL;
 				Cell newCell = cell;
 				newCell.setX(x_new); newCell.setY(y_new);	
 				int endHPWL = calculateCellHPWL(newCell, cellMap, netMap);
 	
 				// Pick the first location that provides benefit
-				if (endHPWL < initHPWL) { 
-					swapList.emplace_back(newCell);
+				if (endHPWL < initHPWL) {
+//					cout << "HPWL: " << initHPWL << " => " << endHPWL << "\n";
+//					cout << "Moving " << cell.getName() << " from (";
+//					cout << cell.getX() << ", " << cell.getY() << ") to (";
+//					cout << y_new << ", " << x_new << ")\n";
+					(*placement).swapCells( cell.getY(), cell.getX(), 
+						newCell.getY(), newCell.getX() );
+					(*cellMap)[ newCell.getName() ] = newCell;
 					break;
 				}	
 			} else {
 				Cell otherCell = (*cellMap)[otherCellName]; 
 				// If a cell exists here, check if fixed
-				if ( otherCell.isFixed() || otherCell.getType() != cell.getType() ) {
-					// Only cells of the same type can be swapped, since
-					//   each location has only one possible type
+				if ( otherCell.isFixed() ) {
+					// Cannot swap with fixed cells
 					continue;	
 				} else {
+
 					// Determine whether swapping both cells is worth it
-					int initHPWL = calculateCellHPWL(cell, cellMap, netMap) 
+					int initHPWL = initCellHPWL
 						+ calculateCellHPWL(otherCell, cellMap, netMap);
 					
 					// Simulate swapping the cells
@@ -253,8 +282,8 @@ void global_swap_algorithm (Placement* placement,
 					newCell.setX( otherCell.getX() ); 
 					newCell.setY( otherCell.getY() );	
 					Cell newOtherCell = otherCell;
-					newOtherCell.setX( x_new );
-					newOtherCell.setY( y_new );	
+					newOtherCell.setX( cell.getX() );
+					newOtherCell.setY( cell.getY() );	
 					
 					// Recalculate HPWL for both new cell locations
 					int endHPWL = calculateCellHPWL(newCell, cellMap, netMap) 
@@ -262,23 +291,24 @@ void global_swap_algorithm (Placement* placement,
 				
 					// Pick the first location that provides benefit
 					if (endHPWL < initHPWL) { 
-						swapList.emplace_back(newCell);
-						swapList.emplace_back(newOtherCell);
+//						cout << "HPWL: " << initHPWL << " => " << endHPWL << "\n";
+//						cout << "Swapping " << cell.getName() << " at (";
+//						cout << cell.getX() << ", " << cell.getY() << ") with "; 
+//						cout << otherCell.getName() << " at (" << otherCell.getX();
+//						cout << ", " << otherCell.getY() << ")\n";
+						(*placement).swapCells( cell.getY(), cell.getX(), 
+							otherCell.getY(), otherCell.getX() );
+						(*cellMap)[ newCell.getName() ] = newCell;
+						(*cellMap)[ newOtherCell.getName() ] = newOtherCell;
 						break;
 					}
+				
 				}
 			}
 			
 			// Try next optimal location for a given cell
 		}
 
-
-		// If cells are actually chosen to be swapped, swap them 
-		for (int i = 0; i < swapList.size(); i++) {
-			Cell swapCell = swapList[i];
-			cout << "Swapping cell: " << swapCell << "\n";
-			(*cellMap)[ swapCell.getName() ] = swapCell;                      
-        }
 
 		// Move on to next cell in cell map
 	}
@@ -303,6 +333,9 @@ int main (int argc, char* argv[]) {
 	
 	int rows = sitemap.size();
 	int cols = sitemap[0].size();
+	int cells = cellMap.size();
+	int nets = netMap.size();
+	int sites = sitemap.size() * sitemap[0].size();
 
 	// Initialize nets with bounding box parameters
 	for (auto it_net = netMap.begin(); it_net != netMap.end(); ++it_net) {
@@ -344,14 +377,15 @@ int main (int argc, char* argv[]) {
 		global_swap_algorithm(&placement, &cellMap, &netMap);	
 		div_t algoTime = div ( (clock() - main_t) / (double) CLOCKS_PER_SEC, 60);	
 		cout << "\n" << "Current Global Swap Algorithm Time: ";
-		cout << algoTime.quot << " minutes, " << algoTime.rem << " seconds" << "\n";
-	
+		cout << algoTime.quot << " minutes, " << algoTime.rem << " seconds\n\n";	
 	//}
 		
 //	div_t totalTime = div ( (clock() - total_t) / (double) CLOCKS_PER_SEC, 60);	
 //	cout << "\n" << "Total Linear Placement Algorithm Time: ";
 //	cout << totalTime.quot << " minutes, " << totalTime.rem << " seconds" << "\n";
 
+	// Check Placement Validity
+	placement.checkValidity( &cellMap );
 
 	// Check Total HPWL	after algorithm
 	int endHPWL = calculateTotalHPWL(&cellMap, &netMap);
