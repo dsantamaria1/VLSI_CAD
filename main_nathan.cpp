@@ -22,12 +22,6 @@ struct Solution {
 
 
 
-void checkOverlap () {
-
-}
-
-
-
 //													//
 // Method to Calculate HPWL to Benchmark Algorithms //
 //													//
@@ -116,23 +110,23 @@ tuple<int, int, int, int> get_optimal_region (Cell cell,
 	
 		Net net = (*netMap)[netNames[n]];	
 		
-		int x_min = net.getXMin();
-		int x_max = net.getXMax();
-		int y_min = net.getYMin();
-		int y_max = net.getYMax();
+//		int x_min = net.getXMin();
+//		int x_max = net.getXMax();
+//		int y_min = net.getYMin();
+//		int y_max = net.getYMax();
 
-		if ( cell.getX() != net.getXMin() && cell.getX() != net.getXMax() 
-				&& cell.getY() != net.getYMin() && cell.getY() != net.getYMax() ) {
+//		if ( cell.getX() != net.getXMin() && cell.getX() != net.getXMax() 
+//				&& cell.getY() != net.getYMin() && cell.getY() != net.getYMax() ) {
 	
-		} else {
+//		} else {
 		// Only calculate cost if x is not in the net span
 		
 			vector<string> cellNames = net.getCellNames();
 			
-			x_min = INT_MAX;
-			x_max = 0;
-			y_min = INT_MAX;
-			y_max = 0;
+			int x_min = INT_MAX;
+			int x_max = 0;
+			int y_min = INT_MAX;
+			int y_max = 0;
 			
 			for (int c = 0; c < cellNames.size(); c++) {
 				int _x = (*cellMap)[cellNames[c]].getX();
@@ -146,7 +140,7 @@ tuple<int, int, int, int> get_optimal_region (Cell cell,
 				}
 				
 			}
-		}
+//		}
 
 		xBounds.emplace_back(x_min);
 		xBounds.emplace_back(x_max);
@@ -272,7 +266,7 @@ void global_swap_algorithm (Placement* placement,
 					// Cannot swap with fixed cells
 					continue;	
 				} else {
-
+/*
 					// Determine whether swapping both cells is worth it
 					int initHPWL = initCellHPWL
 						+ calculateCellHPWL(otherCell, cellMap, netMap);
@@ -302,7 +296,7 @@ void global_swap_algorithm (Placement* placement,
 						(*cellMap)[ newOtherCell.getName() ] = newOtherCell;
 						break;
 					}
-				
+*/				
 				}
 			}
 			
