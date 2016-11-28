@@ -10,8 +10,8 @@
 #include "Parser.h"
 #include <cmath>
 
-#define WINDOW_SIZE 7
-#define DIVISOR 8
+#define WINDOW_SIZE 8
+#define DIVISOR WINDOW_SIZE+1
 using namespace std;
 
 struct seq{
@@ -311,7 +311,7 @@ void interleave(vector<Site>* v, unordered_map<string, Cell>* cellMap,
 		setA.clear();
 		setB.clear();
 	}
-	//cout <<"cell count=" <<counter <<endl;
+	cout <<"cell count=" <<counter <<endl;
 }
 
 // Algorithm Driver Function
@@ -338,18 +338,44 @@ int main (int argc, char* argv[]) {
 		for(int i =0; i < cellNames.size(); i++){
 			cellMap[cellNames[i]].addNet(it->first);
 		}
+		it->second.buildXList(&cellMap);
+		it->second.buildYList(&cellMap);
 	}
 
 	//  Run Algorithm
+	clock_t startTime = clock();
 	int hpwl = calcHPWL(&netMap, &cellMap);
+	clock_t endTime = clock();
 	cout << "HPWL = " << hpwl << endl;
 
-	for(int i=0; i<placement.getRows(); i++){
-	//for(int i=0; i<200; i++){
+	clock_t clockTicksTaken = endTime - startTime;
+	double timeInSeconds = clockTicksTaken / (double) CLOCKS_PER_SEC;
+	cout << "timeInSeconds=" <<timeInSeconds<<endl;
+	cout << endl;
+
+	hpwl = 0;
+	startTime = clock();
+	for(auto it = netMap.begin(); it != netMap.end(); ++it){
+		hpwl += it->second.calculateHPWL();
+	}
+	endTime = clock();
+	cout << "New calculateHPWL() = " << hpwl << endl;
+	clockTicksTaken = endTime - startTime;
+	timeInSeconds = clockTicksTaken / (double) CLOCKS_PER_SEC;
+	cout << "timeInSeconds=" <<timeInSeconds<<endl;
+
+	startTime = clock();
+	//for(int i=0; i<placement.getRows(); i++){
+	for(int i=126; i<137; i++){
 		cout << "Interleaving row " << i << endl;
 		vector<Site> v = placement.getRow(i);
 		interleave(&v, &cellMap, &netMap);
 	}
+	endTime = clock();
+	clockTicksTaken = endTime - startTime;
+	timeInSeconds = clockTicksTaken / (double) CLOCKS_PER_SEC;
+	cout << "timeInSeconds=" <<timeInSeconds<<endl;
+
 	hpwl = calcHPWL(&netMap, &cellMap);
 	cout << "New HPWL = " << hpwl << endl;
 }

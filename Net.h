@@ -17,10 +17,19 @@ public:
 	string getName ();
 	vector<string> getCellNames ();
 	int calculateHPWL (unordered_map<string, Cell>* cellMap);
+	int calculateHPWL();
+	void sortXList();
+	int getXMin();
+	int getXMax();
+	vector<int> getXList();
+	void buildXList(unordered_map<string, Cell>* cellMap);
+	void buildYList(unordered_map<string, Cell>* cellMap);
 	friend ostream& operator<< (ostream& os, const Net& net);
 private:
 	string _name;
-	vector<string> _cellNames;	
+	vector<string> _cellNames;
+	vector<int> _xList;
+	vector<int> _yList;
 };
 
 #endif
