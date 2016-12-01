@@ -386,5 +386,7 @@ int main (int argc, char* argv[]) {
 	double improvement = 100 * (beginHPWL - endHPWL) / (double)(beginHPWL);
 	cout << "\n" << "Final HPWL: " << endHPWL << "\n"; 
 	cout << "HPWL Improvement: " << improvement << "%" << "\n" << "\n";
+
+	placement.printPlacement( "FPGA01_new.pl", &cellMap );
 }
 

@@ -1,0 +1,38 @@
+==========================
+= REMOTE COMMANDS README =
+==========================
+
+	To run the evaluator remotely, you need to simply copy all your files to your 
+remote machine and run them from your local machine via ssh. In my example, I'm just 
+using target_util_1.0/FPGA01 and copying the files over into a dummy directory. 
+Ideally, I should have the benchmarks folders on the linux machines, and then just
+copy over a new output placement into the appropriate benchmark folder every time I
+need to update it.
+
+
+===========
+= Example =
+===========
+
+// I'm creating a dummy directory in my $HOME directory for the evaluator files
+ssh nelling@mario.ece.utexas.edu 'mkdir cad_dump'
+
+// Move over initial files from benchmark
+cd benchmarks/target_util_1.0/FPGA01
+scp * nelling@mario.ece.utexas.edu:~/cad_dump
+cd -
+
+// Update your main file to include a line similar to mine in main_nathan.cpp
+placement.printPlacement( "FPGA01_new.pl", &cellMap );
+
+// Generate placement file
+./main.o <benchmark path> <benchmark name>
+
+// Copy it over
+scp <filename given in script> nelling@mario.ece.utexas.edu:~/cad_dump
+
+// Run evaluator on 64-bit machine (kamek, koopa, luigi, wario, toad)
+ssh nelling@kamek.ece.utexas.edu 'cd cad_dump; ./evaluator_1017 *sitemap *nets FPGA01.pl <your file name>'
+
+// Outputs evaluator data
+

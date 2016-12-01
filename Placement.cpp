@@ -1,6 +1,8 @@
 #include <string>
 #include <vector>
 #include <unordered_map>
+#include <iostream>
+#include <fstream>
 
 #include "Placement.h"
 #include "Cell.h"
@@ -88,3 +90,37 @@ void Placement::checkValidity ( unordered_map<string, Cell>* cellMap ) {
 }
 
 
+
+void Placement::printPlacement ( string filename, 
+		unordered_map<string, Cell>* cellMap) {
+	ofstream outfile;
+
+	try {
+		outfile.open(filename);
+		
+		for (int r = 0; r < _rows; r++) {
+			for (int c = 0; c < _cols; c++) {
+				string cellName = _placement[r][c].getCellName();
+				if ( cellName.empty() ) { continue; }
+				
+				Cell cell = (*cellMap)[ cellName ];
+
+				outfile << cell.getName() << " ";
+				outfile << cell.getType() << " ";
+				outfile << cell.getX() << " ";
+				outfile << cell.getY() << " ";
+				
+				if ( cell.isFixed() ) {
+					outfile << "F" << endl; 
+				} else {
+					outfile << "M" << endl;
+				}
+			}
+		}	
+		outfile.close();	
+	}
+	catch (std::ofstream::failure e) {
+		cerr << "Exception occured during file handling." << endl;
+	}	
+
+}
