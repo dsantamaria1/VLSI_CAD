@@ -22,51 +22,41 @@ struct Solution {
 	int site;
 };
 
-void func(Cell cell, unordered_map<string, Cell>* cellMap, unordered_map<string, Net>* netMap, int* r){
+//													//
+// Method to Calculate HPWL to Benchmark Algorithms //
+//													//
+int calculateTotalHPWL (unordered_map<string, Cell>* cellMap,
+		unordered_map<string, Net>* netMap) {
 	int hpwl = 0;
 
-	vector<string> netNames = cell.getNetNames();
-
-	for (int n = 0; n < netNames.size(); n++) {
-		vector<string> cellNames = (*netMap)[netNames[n]].getCellNames();
-
+	for (auto it = (*netMap).begin(); it != (*netMap).end(); ++it) {
+		vector<string> cellNames = (it->second).getCellNames();
 		int x_max = 0;
 		int y_max = 0;
 		int x_min = INT_MAX;
 		int y_min = INT_MAX;
 
-		for (int c = 0; c < cellNames.size(); c++) {
-			if ( cellNames[c] != cell.getName() ) {
-				int x = (*cellMap)[cellNames[c]].getX();
-				int y = (*cellMap)[cellNames[c]].getY();
-				x_max = (x > x_max) ? x : x_max;
-				x_min = (x < x_min) ? x : x_min;
-				y_max = (y > y_max) ? y : y_max;
-				y_min = (y < y_min) ? y : y_min;
-			}
+		for (int i = 0; i < cellNames.size(); i++) {
+			int x = (*cellMap)[cellNames[i]].getX();
+			int y = (*cellMap)[cellNames[i]].getY();
+			x_max = (x > x_max) ? x : x_max;
+			x_min = (x < x_min) ? x : x_min;
+			y_max = (y > y_max) ? y : y_max;
+			y_min = (y < y_min) ? y : y_min;
 		}
-
-		int x_cell = cell.getX();
-		int y_cell = cell.getY();
-		x_max = (x_cell > x_max) ? x_cell : x_max;
-		x_min = (x_cell < x_min) ? x_cell : x_min;
-		y_max = (y_cell > y_max) ? y_cell : y_max;
-		y_min = (y_cell < y_min) ? y_cell : y_min;
-
 		hpwl += abs(x_max - x_min) + abs(y_max - y_min);
 	}
 
-	(*r) = hpwl;
+	return hpwl;
 }
 
 //												   //
 // Method to Calculate HPWL for all Nets of a Cell //
 //												   //
-void func2 (Cell cell, Cell cell2, unordered_map<string, Cell>* cellMap,
-		unordered_map<string, Net>* netMap, int* r) {
+int calculateCellHPWL (Cell cell, Cell cell2, unordered_map<string, Cell>* cellMap,
+		unordered_map<string, Net>* netMap) {
 	int hpwl = 0;
- 	// std::thread::id this_id = std::this_thread::get_id();
-	// cout << "tid="<<this_id <<endl;
+
 	vector<string> netNames = cell.getNetNames();
 
 	for (int n = 0; n < netNames.size(); n++) {
@@ -103,35 +93,6 @@ void func2 (Cell cell, Cell cell2, unordered_map<string, Cell>* cellMap,
 
 		hpwl += abs(x_max - x_min) + abs(y_max - y_min);
 	}
-
-	(*r) = hpwl;
-}
-
-//													//
-// Method to Calculate HPWL to Benchmark Algorithms //
-//													//
-int calculateTotalHPWL (unordered_map<string, Cell>* cellMap,
-		unordered_map<string, Net>* netMap) {
-	int hpwl = 0;
-
-	for (auto it = (*netMap).begin(); it != (*netMap).end(); ++it) {
-		vector<string> cellNames = (it->second).getCellNames();
-		int x_max = 0;
-		int y_max = 0;
-		int x_min = INT_MAX;
-		int y_min = INT_MAX;
-
-		for (int i = 0; i < cellNames.size(); i++) {
-			int x = (*cellMap)[cellNames[i]].getX();
-			int y = (*cellMap)[cellNames[i]].getY();
-			x_max = (x > x_max) ? x : x_max;
-			x_min = (x < x_min) ? x : x_min;
-			y_max = (y > y_max) ? y : y_max;
-			y_min = (y < y_min) ? y : y_min;
-		}
-		hpwl += abs(x_max - x_min) + abs(y_max - y_min);
-	}
-
 	return hpwl;
 }
 
@@ -139,48 +100,69 @@ int calculateTotalHPWL (unordered_map<string, Cell>* cellMap,
 // Method to Calculate HPWL for all Nets of a Cell //
 //												   //
 int calculateCellHPWL (Cell cell, unordered_map<string, Cell>* cellMap,
-		unordered_map<string, Net>* netMap) {
+		unordered_map<string, Net>* netMap,
+		unordered_map<string, Net>* freshNetMap) {
 	int hpwl = 0;
 
 	vector<string> netNames = cell.getNetNames();
 
 	for (int n = 0; n < netNames.size(); n++) {
-		vector<string> cellNames = (*netMap)[netNames[n]].getCellNames();
+		Net net = (*netMap)[netNames[n]];
+		vector<string> cellNames = net.getCellNames();
 
-		int x_max = 0;
-		int y_max = 0;
-		int x_min = INT_MAX;
-		int y_min = INT_MAX;
-
-		for (int c = 0; c < cellNames.size(); c++) {
-			if ( cellNames[c] != cell.getName() ) {
-				int x = (*cellMap)[cellNames[c]].getX();
-				int y = (*cellMap)[cellNames[c]].getY();
-				x_max = (x > x_max) ? x : x_max;
-				x_min = (x < x_min) ? x : x_min;
-				y_max = (y > y_max) ? y : y_max;
-				y_min = (y < y_min) ? y : y_min;
-			}
-		}
+		int x_min = net.getXMin();
+		int x_max = net.getXMax();
+		int y_min = net.getYMin();
+		int y_max = net.getYMax();
+		int currentHPWL = net.getHPWL();
 
 		int x_cell = cell.getX();
 		int y_cell = cell.getY();
-		x_max = (x_cell > x_max) ? x_cell : x_max;
-		x_min = (x_cell < x_min) ? x_cell : x_min;
-		y_max = (y_cell > y_max) ? y_cell : y_max;
-		y_min = (y_cell < y_min) ? y_cell : y_min;
+		Cell oldCell = (*cellMap)[cell.getName()];
+		int x_old = oldCell.getX();
+		int y_old = oldCell.getY();
 
-		hpwl += abs(x_max - x_min) + abs(y_max - y_min);
+		// Recalculate if new cell is out of bounds, or old cell was a bound
+		if ((x_cell < x_min || x_cell > x_max || y_cell < y_min || y_cell > y_max) ||
+				( x_old == x_min || x_old == x_max ||
+				 y_old == y_min || y_old == y_max )) {
+			x_max = 0;
+			y_max = 0;
+			x_min = INT_MAX;
+			y_min = INT_MAX;
+
+			// Only calculate cost if x is not in the net span
+			for (int c = 0; c < cellNames.size(); c++) {
+				if ( cellNames[c] != cell.getName() ) {
+					int x = (*cellMap)[cellNames[c]].getX();
+					int y = (*cellMap)[cellNames[c]].getY();
+					x_max = (x > x_max) ? x : x_max;
+					x_min = (x < x_min) ? x : x_min;
+					y_max = (y > y_max) ? y : y_max;
+					y_min = (y < y_min) ? y : y_min;
+				}
+			}
+
+			x_max = (x_cell > x_max) ? x_cell : x_max;
+			x_min = (x_cell < x_min) ? x_cell : x_min;
+			y_max = (y_cell > y_max) ? y_cell : y_max;
+			y_min = (y_cell < y_min) ? y_cell : y_min;
+			int newHPWL = abs(x_max - x_min) + abs(y_max - y_min);
+
+			net.setBoundingBox(x_min, x_max, y_min, y_max);
+			(*freshNetMap)[ net.getName() ] = net;
+
+			currentHPWL = newHPWL;
+		}
+		hpwl += currentHPWL;
 	}
-
 	return hpwl;
 }
-
 
 //									//
 // Calculate Cost for a Global Swap	//
 //									//
-tuple<int, int, int, int,int> get_optimal_region (Cell cell,
+tuple<int, int, int, int, int> get_optimal_region (Cell cell,
 		unordered_map<string, Cell>* cellMap, unordered_map<string, Net>* netMap) {
 
 	vector<string> netNames = cell.getNetNames();
@@ -190,41 +172,50 @@ tuple<int, int, int, int,int> get_optimal_region (Cell cell,
     int hpwl = 0;
 
 	for (int n = 0; n < netNames.size(); n++) {
-
 		Net net = (*netMap)[netNames[n]];
-
 		vector<string> cellNames = net.getCellNames();
 
-		int x_min = INT_MAX;
-		int x_max = 0;
-		int y_min = INT_MAX;
-		int y_max = 0;
+		int x_min = net.getXMin();
+		int x_max = net.getXMax();
+		int y_min = net.getYMin();
+		int y_max = net.getYMax();
+		int currentHPWL = net.getHPWL();
 
-		for (int c = 0; c < cellNames.size(); c++) {
-			int _x = (*cellMap)[cellNames[c]].getX();
-			int _y = (*cellMap)[cellNames[c]].getY();
+		if ( cell.getX() != net.getXMin() && cell.getX() != net.getXMax()
+				&& cell.getY() != net.getYMin() && cell.getY() != net.getYMax() ) {
+			xBounds.emplace_back(x_min);
+			xBounds.emplace_back(x_max);
+			yBounds.emplace_back(y_min);
+			yBounds.emplace_back(y_max);
 
-			if ( cellNames[c] != cell.getName() ) {
-				x_min = (_x < x_min) ? _x : x_min;
-				x_max = (_x > x_max) ? _x : x_max;
-				y_min = (_y < y_min) ? _y : y_min;
-				y_max = (_y > y_max) ? _y : y_max;
-			}
 		}
+		else {
+			// For optimal region, we need bounding box without cell
+			x_min = INT_MAX;
+			x_max = 0;
+			y_min = INT_MAX;
+			y_max = 0;
 
-		xBounds.emplace_back(x_min);
-		xBounds.emplace_back(x_max);
-		yBounds.emplace_back(y_min);
-		yBounds.emplace_back(y_max);
+			// Only calculate cost if x is not in the net span
+			for (int c = 0; c < cellNames.size(); c++) {
+				int _x = (*cellMap)[cellNames[c]].getX();
+				int _y = (*cellMap)[cellNames[c]].getY();
 
-		int x_cell = cell.getX();
-		int y_cell = cell.getY();
-		x_max = (x_cell > x_max) ? x_cell : x_max;
-		x_min = (x_cell < x_min) ? x_cell : x_min;
-		y_max = (y_cell > y_max) ? y_cell : y_max;
-		y_min = (y_cell < y_min) ? y_cell : y_min;
+				if ( cellNames[c] != cell.getName() ) {
+					x_min = (_x < x_min) ? _x : x_min;
+					x_max = (_x > x_max) ? _x : x_max;
+					y_min = (_y < y_min) ? _y : y_min;
+					y_max = (_y > y_max) ? _y : y_max;
+				}
+			}
 
-		hpwl += abs(x_max - x_min) + abs(y_max - y_min);
+			xBounds.emplace_back(x_min);
+			xBounds.emplace_back(x_max);
+			yBounds.emplace_back(y_min);
+			yBounds.emplace_back(y_max);
+		}
+		hpwl += currentHPWL;
+
 	}
 	std::sort( xBounds.begin(), xBounds.end() );
 	std::sort( yBounds.begin(), yBounds.end() );
@@ -247,7 +238,6 @@ tuple<int, int, int, int,int> get_optimal_region (Cell cell,
 	}
 	return std::make_tuple(topBound, bottomBound, leftBound, rightBound, hpwl);
 }
-
 
 //					    //
 // Global Swap Function //
@@ -276,7 +266,6 @@ void global_swap_algorithm (Placement* placement,
 		std::tie(topBound, bottomBound, leftBound, rightBound, initCellHPWL)
 			= get_optimal_region(cell, cellMap, netMap);
 
-
 		// Create list of sites to try to swap with in the optimal region
 		vector<tuple<int, int>> boxPoints;
 		if (topBound == bottomBound && leftBound == rightBound) {
@@ -300,12 +289,12 @@ void global_swap_algorithm (Placement* placement,
 
 		// Investigate each optimal region point
 		// Currently this just checks the corners of the optimal region
-
-		//initCellHPWL = calculateCellHPWL(cell, cellMap, netMap);
+		//int initCellHPWL = calculateCellHPWL(cell, cellMap, netMap);
 		for (int p = 0; p < boxPoints.size(); p++ ) {
 			int x_new, y_new;
 			std::tie(x_new, y_new) = boxPoints[p];
 			Site site = (*placement).getSite(y_new, x_new);
+			unordered_map<string, Net> freshNetMap;
 
 			if ( site.getType() != cell.getType() ) {
 				// Cells cannot be placed into invalid sites
@@ -320,13 +309,20 @@ void global_swap_algorithm (Placement* placement,
 				int initHPWL = initCellHPWL;
 				Cell newCell = cell;
 				newCell.setX(x_new); newCell.setY(y_new);
-				int endHPWL = calculateCellHPWL(newCell, cellMap, netMap);
+				int endHPWL = calculateCellHPWL(newCell, cellMap, netMap,
+					&freshNetMap);
 
 				// Pick the first location that provides benefit
 				if (endHPWL < initHPWL) {
 					(*placement).swapCells( cell.getY(), cell.getX(),
 						newCell.getY(), newCell.getX() );
 					(*cellMap)[ newCell.getName() ] = newCell;
+					if (!freshNetMap.empty()) {
+						for (auto it = freshNetMap.begin();
+								it != freshNetMap.end(); ++it) {
+							(*netMap)[ it->first ] = it->second;
+						}
+					}
 					break;
 				}
 			} else {
@@ -336,33 +332,28 @@ void global_swap_algorithm (Placement* placement,
 					// Cannot swap with fixed cells
 					continue;
 				} else {
-
 				}
 			}
-
 			// Try next optimal location for a given cell
 		}
-
-
 		// Move on to next cell in cell map
 	}
 }
 
 bool insideOptimalRegion(int leftBound, int rightBound, int topBound,
-	int bottomBound, Cell c){
-		int x = c.getX();
-		int y = c.getY();
-		if(x>=leftBound && x<=rightBound && y>=bottomBound && y<=topBound){
-			return true;
-		} else {
-			return false;
-		}
-
+		int bottomBound, Cell c){
+	int x = c.getX();
+	int y = c.getY();
+	if(x>=leftBound && x<=rightBound && y>=bottomBound && y<=topBound){
+		return true;
+	} else {
+		return false;
+	}
 }
 
-//					    //
+//	   					  //
 // Vertical Swap Function //
-//						//
+//						  //
 void vertical_swap(Placement* placement,
 		unordered_map<string, Cell>* cellMap, unordered_map<string, Net>* netMap){
 			int cellsDone = 0;
@@ -390,6 +381,7 @@ void vertical_swap(Placement* placement,
 				int y = cell.getY();
 				int initHPWL = initCellHPWL;
 				Cell newCell = cell;
+				unordered_map<string, Net> freshNetMap;
 
 				if(y < bottomBound){
 					int newY = y+1;
@@ -401,7 +393,8 @@ void vertical_swap(Placement* placement,
 					string otherCellName = site.getCellName();
 					if ( otherCellName == "" ) { //empty site
 						newCell.setX(x); newCell.setY(newY);
-						int endHPWL=calculateCellHPWL(newCell, cellMap, netMap);
+						int endHPWL=calculateCellHPWL(newCell, cellMap,
+							netMap, &freshNetMap);
 						if (endHPWL < initCellHPWL) {
 							(*placement).swapCells( cell.getY(), cell.getX(),
 								newCell.getY(), newCell.getX() );
@@ -415,18 +408,24 @@ void vertical_swap(Placement* placement,
 						cellBeingSwapped.setX(x); cellBeingSwapped.setY(y);
 
 						int initCellHPWL2, endHPWL1, endHPWL2;
-						#if MULTITHREADING == 1
-								std::thread t1(func, tempCell, cellMap, netMap, &initCellHPWL2);
-								std::thread t2(func2, newCell, cellBeingSwapped, cellMap, netMap, &endHPWL1);
-								std::thread t3(func2, cellBeingSwapped, newCell, cellMap, netMap, &endHPWL2);
-								t1.join();
-								t2.join();
-								t3.join();
-						#else
-								func(tempCell, cellMap, netMap,&initCellHPWL2);
-								func2(newCell, cellBeingSwapped, cellMap, netMap, &endHPWL1);
-								func2(cellBeingSwapped, newCell, cellMap, netMap, &endHPWL2);
-						#endif
+				#if MULTITHREADING == 1
+						std::thread t1(func, tempCell, cellMap, netMap,
+							 &initCellHPWL2);
+						std::thread t2(func2, newCell, cellBeingSwapped,
+							 cellMap, netMap, &endHPWL1);
+						std::thread t3(func2, cellBeingSwapped, newCell,
+							 cellMap, netMap, &endHPWL2);
+						t1.join();
+						t2.join();
+						t3.join();
+				#else
+						initCellHPWL2=calculateCellHPWL(tempCell, cellMap,
+							netMap, &freshNetMap);
+						endHPWL1=calculateCellHPWL(newCell, cellBeingSwapped,
+							cellMap, netMap);
+						endHPWL2=calculateCellHPWL(cellBeingSwapped, newCell,
+							cellMap, netMap);
+				#endif
 						int result = (initCellHPWL-endHPWL1)+(initCellHPWL2-endHPWL2);
 						if (result > 0) {
 							(*placement).swapCells( cell.getY(), cell.getX(),
@@ -446,7 +445,8 @@ void vertical_swap(Placement* placement,
 					string otherCellName = site.getCellName();
 					if ( otherCellName == "" ) { //empty site
 						newCell.setX(x); newCell.setY(newY);
-						int endHPWL = calculateCellHPWL(newCell, cellMap, netMap);
+						int endHPWL = calculateCellHPWL(newCell, cellMap,
+							netMap, &freshNetMap);
 						if (endHPWL < initCellHPWL) {
 							(*placement).swapCells( cell.getY(), cell.getX(),
 								newCell.getY(), newCell.getX() );
@@ -460,16 +460,22 @@ void vertical_swap(Placement* placement,
 
 						int initCellHPWL2, endHPWL1, endHPWL2;
 				#if MULTITHREADING == 1
-						std::thread t1(func, tempCell, cellMap, netMap, &initCellHPWL2);
-						std::thread t2(func2, newCell, cellBeingSwapped, cellMap, netMap, &endHPWL1);
-						std::thread t3(func2, cellBeingSwapped, newCell, cellMap, netMap, &endHPWL2);
+						std::thread t1(func, tempCell, cellMap, netMap,
+							&initCellHPWL2);
+						std::thread t2(func2, newCell, cellBeingSwapped,
+							cellMap, netMap, &endHPWL1);
+						std::thread t3(func2, cellBeingSwapped, newCell,
+							cellMap, netMap, &endHPWL2);
 						t1.join();
 						t2.join();
 						t3.join();
 				#else
-						func(tempCell, cellMap, netMap,&initCellHPWL2);
-						func2(newCell, cellBeingSwapped, cellMap, netMap, &endHPWL1);
-						func2(cellBeingSwapped, newCell, cellMap, netMap, &endHPWL2);
+						initCellHPWL2=calculateCellHPWL(tempCell, cellMap,
+							netMap, &freshNetMap);
+						endHPWL1=calculateCellHPWL(newCell, cellBeingSwapped,
+							cellMap, netMap);
+						endHPWL2=calculateCellHPWL(cellBeingSwapped, newCell,
+							cellMap, netMap);
 				#endif
 						int result = (initCellHPWL-endHPWL1)+(initCellHPWL2-endHPWL2);
 						if (result > 0) {
@@ -509,7 +515,7 @@ int main (int argc, char* argv[]) {
 	for (auto it_net = netMap.begin(); it_net != netMap.end(); ++it_net) {
  		string name = (it_net->first);
 		Net net = (it_net->second);
-		net.setBoundingBox (&cellMap);
+		net.findBoundingBox (&cellMap);
 		netMap[name] = net;
 	}
 
@@ -538,12 +544,12 @@ int main (int argc, char* argv[]) {
 
 		// Run Algorithm
 		main_t = clock();
-		for(int i=0; i<3; i++){
-			cout <<"In iteration "<<i <<endl;
-			 vertical_swap(&placement, &cellMap, &netMap);
-			 cout <<"Global Placements"<<endl;
-			 global_swap_algorithm(&placement, &cellMap, &netMap);
-		}
+		// for(int i=0; i<3; i++){
+		// 	cout <<"In iteration "<<i <<endl;
+		// 	 vertical_swap(&placement, &cellMap, &netMap);
+		// 	 cout <<"Global Placements"<<endl;
+		// 	 global_swap_algorithm(&placement, &cellMap, &netMap);
+		// }
 		vertical_swap(&placement, &cellMap, &netMap);
 		div_t algoTime = div ( (clock() - main_t) / (double) CLOCKS_PER_SEC, 60);
 		cout << "\n" << "Current Global Swap Algorithm Time: ";
