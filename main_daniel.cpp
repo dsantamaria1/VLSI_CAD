@@ -15,7 +15,7 @@
 #include "Parser.h"
 
 using namespace std;
-
+#define MULTITHREADING  0
 
 struct Solution {
 	int cost;
@@ -65,7 +65,8 @@ void func(Cell cell, unordered_map<string, Cell>* cellMap, unordered_map<string,
 void func2 (Cell cell, Cell cell2, unordered_map<string, Cell>* cellMap,
 		unordered_map<string, Net>* netMap, int* r) {
 	int hpwl = 0;
-
+ 	// std::thread::id this_id = std::this_thread::get_id();
+	// cout << "tid="<<this_id <<endl;
 	vector<string> netNames = cell.getNetNames();
 
 	for (int n = 0; n < netNames.size(); n++) {
@@ -414,15 +415,18 @@ void vertical_swap(Placement* placement,
 						cellBeingSwapped.setX(x); cellBeingSwapped.setY(y);
 
 						int initCellHPWL2, endHPWL1, endHPWL2;
-						// func(tempCell, cellMap, netMap,&initCellHPWL2);
-						// func2(newCell, cellBeingSwapped, cellMap, netMap, &endHPWL1);
-						// func2(cellBeingSwapped, newCell, cellMap, netMap, &endHPWL2);
-						std::thread t1(func, tempCell, cellMap, netMap, &initCellHPWL2);
-						std::thread t2(func2, newCell, cellBeingSwapped, cellMap, netMap, &endHPWL1);
-						std::thread t3(func2, cellBeingSwapped, newCell, cellMap, netMap, &endHPWL2);
-						t1.join();
-						t2.join();
-						t3.join();
+						#if MULTITHREADING == 1
+								std::thread t1(func, tempCell, cellMap, netMap, &initCellHPWL2);
+								std::thread t2(func2, newCell, cellBeingSwapped, cellMap, netMap, &endHPWL1);
+								std::thread t3(func2, cellBeingSwapped, newCell, cellMap, netMap, &endHPWL2);
+								t1.join();
+								t2.join();
+								t3.join();
+						#else
+								func(tempCell, cellMap, netMap,&initCellHPWL2);
+								func2(newCell, cellBeingSwapped, cellMap, netMap, &endHPWL1);
+								func2(cellBeingSwapped, newCell, cellMap, netMap, &endHPWL2);
+						#endif
 						int result = (initCellHPWL-endHPWL1)+(initCellHPWL2-endHPWL2);
 						if (result > 0) {
 							(*placement).swapCells( cell.getY(), cell.getX(),
@@ -455,15 +459,18 @@ void vertical_swap(Placement* placement,
 						cellBeingSwapped.setX(x); cellBeingSwapped.setY(y);
 
 						int initCellHPWL2, endHPWL1, endHPWL2;
-						// func(tempCell, cellMap, netMap,&initCellHPWL2);
-						// func2(newCell, cellBeingSwapped, cellMap, netMap, &endHPWL1);
-						// func2(cellBeingSwapped, newCell, cellMap, netMap, &endHPWL2);
+				#if MULTITHREADING == 1
 						std::thread t1(func, tempCell, cellMap, netMap, &initCellHPWL2);
 						std::thread t2(func2, newCell, cellBeingSwapped, cellMap, netMap, &endHPWL1);
 						std::thread t3(func2, cellBeingSwapped, newCell, cellMap, netMap, &endHPWL2);
 						t1.join();
 						t2.join();
 						t3.join();
+				#else
+						func(tempCell, cellMap, netMap,&initCellHPWL2);
+						func2(newCell, cellBeingSwapped, cellMap, netMap, &endHPWL1);
+						func2(cellBeingSwapped, newCell, cellMap, netMap, &endHPWL2);
+				#endif
 						int result = (initCellHPWL-endHPWL1)+(initCellHPWL2-endHPWL2);
 						if (result > 0) {
 							// change placement
