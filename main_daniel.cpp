@@ -156,25 +156,36 @@ int calculateCellHPWL (Cell cell, unordered_map<string, Cell>* cellMap,
 		int x_min = INT_MAX;
 		int y_min = INT_MAX;
 
-		for (int c = 0; c < cellNames.size(); c++) {
-			if ( cellNames[c] != cell.getName() ) {
-				int x = (*cellMap)[cellNames[c]].getX();
-				int y = (*cellMap)[cellNames[c]].getY();
-				x_max = (x > x_max) ? x : x_max;
-				x_min = (x < x_min) ? x : x_min;
-				y_max = (y > y_max) ? y : y_max;
-				y_min = (y < y_min) ? y : y_min;
+//		int x_min = net.getXMin();
+//		int x_max = net.getXMax();
+//		int y_min = net.getYMin();
+//		int y_max = net.getYMax();
+
+//		if ( cell.getX() != net.getXMin() && cell.getX() != net.getXMax() 
+//				&& cell.getY() != net.getYMin() && cell.getY() != net.getYMax() ) {
+	
+//		} else {
+		// Only calculate cost if x is not in the net span
+			for (int c = 0; c < cellNames.size(); c++) {
+				if ( cellNames[c] != cell.getName() ) {
+					int x = (*cellMap)[cellNames[c]].getX();
+					int y = (*cellMap)[cellNames[c]].getY();
+					x_max = (x > x_max) ? x : x_max;
+					x_min = (x < x_min) ? x : x_min;
+					y_max = (y > y_max) ? y : y_max;
+					y_min = (y < y_min) ? y : y_min;
+				}
 			}
-		}
-
-		int x_cell = cell.getX();
-		int y_cell = cell.getY();
-		x_max = (x_cell > x_max) ? x_cell : x_max;
-		x_min = (x_cell < x_min) ? x_cell : x_min;
-		y_max = (y_cell > y_max) ? y_cell : y_max;
-		y_min = (y_cell < y_min) ? y_cell : y_min;
-
-		hpwl += abs(x_max - x_min) + abs(y_max - y_min);
+	
+			int x_cell = cell.getX();
+			int y_cell = cell.getY();
+			x_max = (x_cell > x_max) ? x_cell : x_max;
+			x_min = (x_cell < x_min) ? x_cell : x_min;
+			y_max = (y_cell > y_max) ? y_cell : y_max;
+			y_min = (y_cell < y_min) ? y_cell : y_min;
+	
+			hpwl += abs(x_max - x_min) + abs(y_max - y_min);
+//		}
 	}
 
 	return hpwl;
@@ -549,7 +560,7 @@ int main (int argc, char* argv[]) {
 	for (auto it_net = netMap.begin(); it_net != netMap.end(); ++it_net) {
  		string name = (it_net->first);
 		Net net = (it_net->second);
-		net.setBoundingBox (&cellMap);
+		net.findBoundingBox (&cellMap);
 		netMap[name] = net;
 	}
 
@@ -578,13 +589,13 @@ int main (int argc, char* argv[]) {
 
 		// Run Algorithm
 		main_t = clock();
-		for(int i=0; i<3; i++){
-			cout <<"In iteration "<<i <<endl;
-			 vertical_swap(&placement, &cellMap, &netMap);
-			 cout <<"Global Placements"<<endl;
+		//for(int i=0; i<3; i++){
+		//	cout <<"In iteration "<<i <<endl;
+		//	 vertical_swap(&placement, &cellMap, &netMap);
+		//	 cout <<"Global Placements"<<endl;
 			 global_swap_algorithm(&placement, &cellMap, &netMap);
-		}
-		vertical_swap(&placement, &cellMap, &netMap);
+		//}
+		//vertical_swap(&placement, &cellMap, &netMap);
 		div_t algoTime = div ( (clock() - main_t) / (double) CLOCKS_PER_SEC, 60);
 		cout << "\n" << "Current Global Swap Algorithm Time: ";
 		cout << algoTime.quot << " minutes, " << algoTime.rem << " seconds\n\n";

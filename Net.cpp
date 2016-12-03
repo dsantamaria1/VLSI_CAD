@@ -46,8 +46,16 @@ vector<string> Net::getCellNames () {
 	return _cellNames;
 }
 
+void Net::setBoundingBox (int x_min, int x_max, int y_min, int y_max) {
+	_x_min = x_min;
+	_x_max = x_max;
+	_y_min = y_min;
+	_y_max = y_max;
 
-void Net::setBoundingBox (unordered_map<string, Cell>* cellMap) {
+}
+
+
+void Net::findBoundingBox (unordered_map<string, Cell>* cellMap) {
 	int x_min = INT_MAX; 
 	int x_max = 0;
 	int y_min = INT_MAX; 
@@ -70,9 +78,10 @@ void Net::setBoundingBox (unordered_map<string, Cell>* cellMap) {
 	_y_max = y_max;
 }
 
+
 // Sum the HPWL from each net in the netlist
 int Net::getHPWL () {
-	int	HPWL = (_x_max - _x_min) + (_y_max - _y_min);
+	int	HPWL = abs((_x_max - _x_min) + (_y_max - _y_min));
 	return HPWL;	
 }
 

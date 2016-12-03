@@ -20,7 +20,8 @@ public:
 	int getYMin ();
 	int getYMax ();
 	vector<string> getCellNames ();
-	void setBoundingBox (unordered_map<string, Cell>* cellMap);
+	void setBoundingBox (int x_min, int x_max, int y_min, int y_max); 
+	void findBoundingBox (unordered_map<string, Cell>* cellMap);
 	int getHPWL ();
 	friend ostream& operator<< (ostream& os, const Net& net);
 private:
