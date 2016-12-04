@@ -371,7 +371,12 @@ void vertical_swap(Placement* placement,
 				int topBound, bottomBound, leftBound, rightBound, initCellHPWL;
 				std::tie(topBound, bottomBound, leftBound, rightBound, initCellHPWL)
 					= get_optimal_region(cell, cellMap, netMap);
-
+				// int setHPWL=0;
+				// for (auto it_net = (*netMap).begin(); it_net != (*netMap).end(); ++it_net) {
+				// 	Net net = (it_net->second);
+				// 	setHPWL += net.getHPWL();
+				// }
+				// cout <<cell.getName()<<" has total hpwl="<<setHPWL <<endl;
 				if(insideOptimalRegion(leftBound, rightBound, topBound,
 					bottomBound, cell)){
 					continue;
@@ -399,6 +404,12 @@ void vertical_swap(Placement* placement,
 							(*placement).swapCells( cell.getY(), cell.getX(),
 								newCell.getY(), newCell.getX() );
 							(*cellMap)[ newCell.getName() ] = newCell;
+							if (!freshNetMap.empty()) {
+								for (auto it = freshNetMap.begin();
+										it != freshNetMap.end(); ++it) {
+									(*netMap)[ it->first ] = it->second;
+								}
+							}
 						}
 
 					} else { // cell in site
@@ -408,32 +419,28 @@ void vertical_swap(Placement* placement,
 						cellBeingSwapped.setX(x); cellBeingSwapped.setY(y);
 
 						int initCellHPWL2, endHPWL1, endHPWL2;
-				#if MULTITHREADING == 1
-						std::thread t1(func, tempCell, cellMap, netMap,
-							 &initCellHPWL2);
-						std::thread t2(func2, newCell, cellBeingSwapped,
-							 cellMap, netMap, &endHPWL1);
-						std::thread t3(func2, cellBeingSwapped, newCell,
-							 cellMap, netMap, &endHPWL2);
-						t1.join();
-						t2.join();
-						t3.join();
-				#else
+
 						initCellHPWL2=calculateCellHPWL(tempCell, cellMap,
 							netMap, &freshNetMap);
 						endHPWL1=calculateCellHPWL(newCell, cellBeingSwapped,
 							cellMap, netMap);
 						endHPWL2=calculateCellHPWL(cellBeingSwapped, newCell,
 							cellMap, netMap);
-				#endif
+
 						int result = (initCellHPWL-endHPWL1)+(initCellHPWL2-endHPWL2);
 						if (result > 0) {
 							(*placement).swapCells( cell.getY(), cell.getX(),
 								tempCell.getY(), tempCell.getX() );
 							(*cellMap)[ newCell.getName() ] = newCell;
 							(*cellMap)[ cellBeingSwapped.getName() ] = cellBeingSwapped;
+							if (!freshNetMap.empty()) {
+								for (auto it = freshNetMap.begin();
+										it != freshNetMap.end(); ++it) {
+									(*netMap)[ it->first ] = it->second;
+								}
+							}
 						}
-					}
+				 	}
 
 				} else if (y > topBound){
 					int newY = y-1;
@@ -451,6 +458,12 @@ void vertical_swap(Placement* placement,
 							(*placement).swapCells( cell.getY(), cell.getX(),
 								newCell.getY(), newCell.getX() );
 							(*cellMap)[ newCell.getName() ] = newCell;
+							if (!freshNetMap.empty()) {
+								for (auto it = freshNetMap.begin();
+										it != freshNetMap.end(); ++it) {
+									(*netMap)[ it->first ] = it->second;
+								}
+							}
 						}
 					} else { // cell in site
 						Cell cellBeingSwapped = (*cellMap)[otherCellName];
@@ -459,24 +472,12 @@ void vertical_swap(Placement* placement,
 						cellBeingSwapped.setX(x); cellBeingSwapped.setY(y);
 
 						int initCellHPWL2, endHPWL1, endHPWL2;
-				#if MULTITHREADING == 1
-						std::thread t1(func, tempCell, cellMap, netMap,
-							&initCellHPWL2);
-						std::thread t2(func2, newCell, cellBeingSwapped,
-							cellMap, netMap, &endHPWL1);
-						std::thread t3(func2, cellBeingSwapped, newCell,
-							cellMap, netMap, &endHPWL2);
-						t1.join();
-						t2.join();
-						t3.join();
-				#else
 						initCellHPWL2=calculateCellHPWL(tempCell, cellMap,
 							netMap, &freshNetMap);
 						endHPWL1=calculateCellHPWL(newCell, cellBeingSwapped,
 							cellMap, netMap);
 						endHPWL2=calculateCellHPWL(cellBeingSwapped, newCell,
 							cellMap, netMap);
-				#endif
 						int result = (initCellHPWL-endHPWL1)+(initCellHPWL2-endHPWL2);
 						if (result > 0) {
 							// change placement
@@ -484,9 +485,15 @@ void vertical_swap(Placement* placement,
 								tempCell.getY(), tempCell.getX() );
 							(*cellMap)[ newCell.getName() ] = newCell;
 							(*cellMap)[ cellBeingSwapped.getName() ] = cellBeingSwapped;
+							if (!freshNetMap.empty()) {
+								for (auto it = freshNetMap.begin();
+										it != freshNetMap.end(); ++it) {
+									(*netMap)[ it->first ] = it->second;
+								}
+							}
 						}
-					}
-				}
+				 	}
+				 }
 			}
 }
 
@@ -559,6 +566,21 @@ int main (int argc, char* argv[]) {
 	// Check Placement Validity
 	placement.checkValidity( &cellMap );
 
+	// Verify net bounding boxes are accurate
+	int setHPWL = 0;
+	int calcHPWL = 0;
+	for (auto it_net = netMap.begin(); it_net != netMap.end(); ++it_net) {
+ 		string name = (it_net->first);
+		Net net = (it_net->second);
+		setHPWL += net.getHPWL();
+		net.findBoundingBox(&cellMap);
+		calcHPWL += net.getHPWL();
+		if(setHPWL!=calcHPWL){
+			cout<<name<<" setHPWL="<<setHPWL<< " calcHPWL="<< calcHPWL<<endl;
+		}
+	}
+	cout << "setHPWL: " << setHPWL << endl;
+	cout << "calcHPWL: " << calcHPWL << endl;
 	// Check Total HPWL	after algorithm
 	int endHPWL = calculateTotalHPWL(&cellMap, &netMap);
 	double improvement = 100 * (beginHPWL - endHPWL) / (double)(beginHPWL);
