@@ -56,27 +56,27 @@ void Net::setBoundingBox (int x_min, int x_max, int y_min, int y_max) {
 
 
 void Net::findBoundingBox (unordered_map<string, Cell>* cellMap) {
-	int x_min = INT_MAX; 
+	int x_min = INT_MAX;
 	int x_max = 0;
-	int y_min = INT_MAX; 
+	int y_min = INT_MAX;
 	int y_max = 0;
 
-	cout << "\n[" <<  _name << "]\n";
+	// cout << "\n[" <<  _name << "]\n";
 	for (auto it = _cellNames.begin(); it != _cellNames.end(); ++it) {
 		string cellName = (*it);
 		int x = (*cellMap)[cellName].getX();
 		int y = (*cellMap)[cellName].getY();
-			
+
 		x_min = (x < x_min) ? x : x_min;
 		x_max = (x > x_max) ? x : x_max;
 		y_min = (y < y_min) ? y : y_min;
 		y_max = (y > y_max) ? y : y_max;
-	
-		if (x == x_min || x == x_max || y == y_min || y == y_max) {
-			cout << cellName << "\n";
-		}
+
+		// if (x == x_min || x == x_max || y == y_min || y == y_max) {
+		// 	cout << cellName << "\n";
+		// }
 	}
-		
+
 	_x_min = x_min;
 	_x_max = x_max;
 	_y_min = y_min;
@@ -87,7 +87,7 @@ void Net::findBoundingBox (unordered_map<string, Cell>* cellMap) {
 // Sum the HPWL from each net in the netlist
 int Net::getHPWL () {
 	int	HPWL = abs((_x_max - _x_min) + (_y_max - _y_min));
-	return HPWL;	
+	return HPWL;
 }
 
 ostream& operator<< (ostream& os, const Net& net) {
@@ -98,10 +98,9 @@ ostream& operator<< (ostream& os, const Net& net) {
 		os << ", [";
 		for (int i = 0; i < cellNames.size(); i++) {
 			os << cellNames[i];
-			if ((i+1) != cellNames.size()) { os << ", "; }	
+			if ((i+1) != cellNames.size()) { os << ", "; }
 		}
 		os << "]}";
 	}
 	return os;
 }
-

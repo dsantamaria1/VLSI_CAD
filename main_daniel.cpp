@@ -400,16 +400,11 @@ void vertical_swap(Placement* placement,
 				int topBound, bottomBound, leftBound, rightBound, initCellHPWL;
 				std::tie(topBound, bottomBound, leftBound, rightBound, initCellHPWL)
 					= get_optimal_region(cell, cellMap, netMap);
-				// int setHPWL=0;
-				// for (auto it_net = (*netMap).begin(); it_net != (*netMap).end(); ++it_net) {
-				// 	Net net = (it_net->second);
-				// 	setHPWL += net.getHPWL();
-				// }
-				// cout <<cell.getName()<<" has total hpwl="<<setHPWL <<endl;
+
 				if(insideOptimalRegion(leftBound, rightBound, topBound,
 					bottomBound, cell)){
 					continue;
-				}
+				} 
 
 				int x = cell.getX();
 				int y = cell.getY();
@@ -422,6 +417,7 @@ void vertical_swap(Placement* placement,
 					Site site = (*placement).getSite(newY, x);
 					// Cells cannot be placed into invalid sites
 					if ( site.getType() != cell.getType() ) {
+						// cout << "xxxx"<< endl;
 						continue;
 					}
 					string otherCellName = site.getCellName();
@@ -429,7 +425,7 @@ void vertical_swap(Placement* placement,
 						newCell.setX(x); newCell.setY(newY);
 						int endHPWL=calculateCellHPWL(newCell, cellMap,
 							netMap, &freshNetMap);
-						if (endHPWL < initCellHPWL) {
+						if (endHPWL <= initCellHPWL) {
 							(*placement).swapCells( cell.getY(), cell.getX(),
 								newCell.getY(), newCell.getX() );
 							(*cellMap)[ newCell.getName() ] = newCell;
@@ -457,7 +453,7 @@ void vertical_swap(Placement* placement,
 							cellMap, netMap,  &freshNetMap);
 
 						int result = (initCellHPWL-endHPWL1)+(initCellHPWL2-endHPWL2);
-						if (result > 0) {
+						if (result >= 0) {
 							(*placement).swapCells( cell.getY(), cell.getX(),
 								tempCell.getY(), tempCell.getX() );
 							(*cellMap)[ newCell.getName() ] = newCell;
@@ -476,6 +472,7 @@ void vertical_swap(Placement* placement,
 					Site site = (*placement).getSite(newY, x);
 					// Cells cannot be placed into invalid sites
 					if ( site.getType() != cell.getType() ) {
+						// cout << "xxxx"<< endl;
 						continue;
 					}
 					string otherCellName = site.getCellName();
@@ -483,7 +480,7 @@ void vertical_swap(Placement* placement,
 						newCell.setX(x); newCell.setY(newY);
 						int endHPWL = calculateCellHPWL(newCell, cellMap,
 							netMap, &freshNetMap);
-						if (endHPWL < initCellHPWL) {
+						if (endHPWL <= initCellHPWL) {
 							(*placement).swapCells( cell.getY(), cell.getX(),
 								newCell.getY(), newCell.getX() );
 							(*cellMap)[ newCell.getName() ] = newCell;
@@ -508,7 +505,7 @@ void vertical_swap(Placement* placement,
 						endHPWL2=calculateCellHPWL(cellBeingSwapped, newCell,
 							cellMap, netMap, &freshNetMap);
 						int result = (initCellHPWL-endHPWL1)+(initCellHPWL2-endHPWL2);
-						if (result > 0) {
+						if (result >= 0) {
 							// change placement
 							(*placement).swapCells( cell.getY(), cell.getX(),
 								tempCell.getY(), tempCell.getX() );
@@ -535,6 +532,7 @@ void vertical_swap(Placement* placement,
 					Site site = (*placement).getSite(y, newX);
 					// Cells cannot be placed into invalid sites
 					if ( site.getType() != cell.getType() ) {
+						// cout << "xxxx"<< endl;
 						continue;
 					}
 					string otherCellName = site.getCellName();
@@ -542,7 +540,7 @@ void vertical_swap(Placement* placement,
 						newCell.setX(newX); newCell.setY(y);
 						int endHPWL = calculateCellHPWL(newCell, cellMap,
 							netMap, &freshNetMap);
-						if (endHPWL < initCellHPWL) {
+						if (endHPWL <= initCellHPWL) {
 							(*placement).swapCells( cell.getY(), cell.getX(),
 								newCell.getY(), newCell.getX() );
 							(*cellMap)[ newCell.getName() ] = newCell;
@@ -569,7 +567,7 @@ void vertical_swap(Placement* placement,
 							cellMap, netMap,  &freshNetMap);
 
 						int result = (initCellHPWL-endHPWL1)+(initCellHPWL2-endHPWL2);
-						if (result > 0) {
+						if (result >= 0) {
 							(*placement).swapCells( cell.getY(), cell.getX(),
 								tempCell.getY(), tempCell.getX() );
 							(*cellMap)[ newCell.getName() ] = newCell;
@@ -588,6 +586,7 @@ void vertical_swap(Placement* placement,
 					Site site = (*placement).getSite(y, newX);
 					// Cells cannot be placed into invalid sites
 					if ( site.getType() != cell.getType() ) {
+						// cout << "xxxx"<< endl;
 						continue;
 					}
 					string otherCellName = site.getCellName();
@@ -595,7 +594,7 @@ void vertical_swap(Placement* placement,
 						newCell.setX(newX); newCell.setY(y);
 						int endHPWL = calculateCellHPWL(newCell, cellMap,
 							netMap, &freshNetMap);
-						if (endHPWL < initCellHPWL) {
+						if (endHPWL <= initCellHPWL) {
 							(*placement).swapCells( cell.getY(), cell.getX(),
 								newCell.getY(), newCell.getX() );
 							(*cellMap)[ newCell.getName() ] = newCell;
@@ -622,7 +621,7 @@ void vertical_swap(Placement* placement,
 							cellMap, netMap,  &freshNetMap);
 
 						int result = (initCellHPWL-endHPWL1)+(initCellHPWL2-endHPWL2);
-						if (result > 0) {
+						if (result >= 0) {
 							(*placement).swapCells( cell.getY(), cell.getX(),
 								tempCell.getY(), tempCell.getX() );
 							(*cellMap)[ newCell.getName() ] = newCell;
@@ -693,13 +692,14 @@ int main (int argc, char* argv[]) {
 
 		// Run Algorithm
 		main_t = clock();
-		int a = 3;
+		int a = 20;
 		cout << "Running VS+GS for " <<a<<" iterations" << endl;
 		for(int i=0; i<a; i++){
 			cout <<"In iteration "<<i <<endl;
-			 vertical_swap(&placement, &cellMap, &netMap);
-			 cout <<"Global Placements"<<endl;
-			 global_swap_algorithm(&placement, &cellMap, &netMap);
+			cout <<"Local Swap" << endl;
+			vertical_swap(&placement, &cellMap, &netMap);
+			cout <<"Global Swap"<<endl;
+			global_swap_algorithm(&placement, &cellMap, &netMap);
 		}
 		vertical_swap(&placement, &cellMap, &netMap);
 		div_t algoTime = div ( (clock() - main_t) / (double) CLOCKS_PER_SEC, 60);
