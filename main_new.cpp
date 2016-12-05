@@ -651,7 +651,7 @@ int main (int argc, char* argv[]) {
 
 		// Run Algorithm
 		main_t = clock();
-		for(int i=0; i<3; i++){
+		for(int i=0; i<5; i++){
 //			cout <<"In iteration "<<i <<endl;
 //			 vertical_swap(&placement, &cellMap, &netMap);
 //			 cout <<"Global Placements"<<endl;
@@ -667,7 +667,8 @@ int main (int argc, char* argv[]) {
 	placement.checkValidity( &cellMap );
 
 	// Verify net bounding boxes are accurate
-	int setHPWL, calcHPWL = 0;
+	int setHPWL = 0;
+	int calcHPWL = 0;
 	for (auto it_net = netMap.begin(); it_net != netMap.end(); ++it_net) {
  		string name = (it_net->first);
 		Net net = (it_net->second);

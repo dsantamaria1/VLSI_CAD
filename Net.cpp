@@ -60,7 +60,8 @@ void Net::findBoundingBox (unordered_map<string, Cell>* cellMap) {
 	int x_max = 0;
 	int y_min = INT_MAX; 
 	int y_max = 0;
-	
+
+	cout << "\n[" <<  _name << "]\n";
 	for (auto it = _cellNames.begin(); it != _cellNames.end(); ++it) {
 		string cellName = (*it);
 		int x = (*cellMap)[cellName].getX();
@@ -70,6 +71,10 @@ void Net::findBoundingBox (unordered_map<string, Cell>* cellMap) {
 		x_max = (x > x_max) ? x : x_max;
 		y_min = (y < y_min) ? y : y_min;
 		y_max = (y > y_max) ? y : y_max;
+	
+		if (x == x_min || x == x_max || y == y_min || y == y_max) {
+			cout << cellName << "\n";
+		}
 	}
 		
 	_x_min = x_min;
