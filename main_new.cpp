@@ -650,16 +650,25 @@ int main (int argc, char* argv[]) {
 	clock_t main_t, total_t;
 
 		// Run Algorithm
+		int i = 1;
+		int prevHPWL = beginHPWL;
+		double improvementMargin = 0.01; 
+		double iterImprovement = 1;
 		main_t = clock();
-		for(int i=0; i<5; i++){
-//			cout <<"In iteration "<<i <<endl;
-//			 vertical_swap(&placement, &cellMap, &netMap);
-//			 cout <<"Global Placements"<<endl;
-			 global_swap_algorithm(&placement, &cellMap, &netMap);
+		while ( iterImprovement > improvementMargin ){
+			cout << "In iteration " << i << endl;
+			//vertical_swap(&placement, &cellMap, &netMap);
+			cout << "Global Placements" << endl;
+			global_swap_algorithm(&placement, &cellMap, &netMap);
+			int currHPWL = calculateTotalHPWL(&cellMap, &netMap);
+			iterImprovement = 100 * (prevHPWL - currHPWL) / (double)(prevHPWL);
+			cout << "HPWL Improvement: " << iterImprovement << "%" << "\n" << "\n";
+			prevHPWL = currHPWL;
+			i++;
 		}
 //		vertical_swap(&placement, &cellMap, &netMap);
 		div_t algoTime = div ( (clock() - main_t) / (double) CLOCKS_PER_SEC, 60);
-		cout << "\n" << "Current Global Swap Algorithm Time: ";
+		cout << "\n" << "Current Total Algorithm Time: ";
 		cout << algoTime.quot << " minutes, " << algoTime.rem << " seconds\n\n";
 
 
@@ -682,7 +691,7 @@ int main (int argc, char* argv[]) {
 
 	// Check Total HPWL	after algorithm
 	int endHPWL = calculateTotalHPWL(&cellMap, &netMap);
-	double improvement = 100 * (beginHPWL - endHPWL) / (double)(beginHPWL);
+	double finalImprovement = 100 * (beginHPWL - endHPWL) / (double)(beginHPWL);
 	cout << "\n" << "Final HPWL: " << endHPWL << "\n";
-	cout << "HPWL Improvement: " << improvement << "%" << "\n" << "\n";
+	cout << "HPWL Improvement: " << finalImprovement << "%" << "\n" << "\n";
 }

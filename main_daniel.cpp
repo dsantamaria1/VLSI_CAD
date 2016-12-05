@@ -690,22 +690,25 @@ int main (int argc, char* argv[]) {
 
 	clock_t main_t, total_t;
 
-		// Run Algorithm
-		main_t = clock();
-		int a = 20;
-		cout << "Running VS+GS for " <<a<<" iterations" << endl;
-		for(int i=0; i<a; i++){
-			cout <<"In iteration "<<i <<endl;
-			cout <<"Local Swap" << endl;
-			vertical_swap(&placement, &cellMap, &netMap);
-			cout <<"Global Swap"<<endl;
-			global_swap_algorithm(&placement, &cellMap, &netMap);
-		}
+	// Run Algorithm
+	int i = 1;
+	int prevHPWL = beginHPWL;
+	double improvementMargin = 0.01; 
+	double iterImprovement = 1;
+	main_t = clock();
+	while ( iterImprovement > improvementMargin ) {
+		cout << "In iteration " << i << endl;
+		cout << "Local Swap" << endl;
 		vertical_swap(&placement, &cellMap, &netMap);
-		div_t algoTime = div ( (clock() - main_t) / (double) CLOCKS_PER_SEC, 60);
-		cout << "\n" << "Current Global Swap Algorithm Time: ";
-		cout << algoTime.quot << " minutes, " << algoTime.rem << " seconds\n\n";
+		cout << "Global Swap" << endl;
+		global_swap_algorithm(&placement, &cellMap, &netMap);
 
+		int currHPWL = calculateTotalHPWL(&cellMap, &netMap);
+		iterImprovement = 100 * (prevHPWL - currHPWL) / (double)(prevHPWL);
+		cout << "HPWL Improvement: " << iterImprovement << "%" << "\n" << "\n";
+		prevHPWL = currHPWL;
+		i++;
+	}
 
 	// Check Placement Validity
 	placement.checkValidity( &cellMap );
