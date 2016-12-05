@@ -523,7 +523,119 @@ void vertical_swap(Placement* placement,
 						}
 				 	}
 				}
+				// redo since might have moved for vertical_swap
+				cell = (*cellMap)[newCell.getName()];
+				x = cell.getX();
+				y = cell.getY();
+				newCell = cell;
+				freshNetMap.clear();
 
+				if(x < leftBound){
+					int newX = x+1;
+					Site site = (*placement).getSite(y, newX);
+					// Cells cannot be placed into invalid sites
+					if ( site.getType() != cell.getType() ) {
+						continue;
+					}
+					string otherCellName = site.getCellName();
+					if ( otherCellName == "" ) { //empty site
+						newCell.setX(newX); newCell.setY(y);
+						int endHPWL = calculateCellHPWL(newCell, cellMap,
+							netMap, &freshNetMap);
+						if (endHPWL < initCellHPWL) {
+							(*placement).swapCells( cell.getY(), cell.getX(),
+								newCell.getY(), newCell.getX() );
+							(*cellMap)[ newCell.getName() ] = newCell;
+							if (!freshNetMap.empty()) {
+								for (auto it = freshNetMap.begin();
+										it != freshNetMap.end(); ++it) {
+									(*netMap)[ it->first ] = it->second;
+								}
+							}
+						}
+					} else { // cell in site
+						Cell cellBeingSwapped = (*cellMap)[otherCellName];
+						Cell tempCell = cellBeingSwapped; // for original of cell to swap
+						newCell.setX(newX); newCell.setY(y);
+						cellBeingSwapped.setX(x); cellBeingSwapped.setY(y);
+
+						int initCellHPWL2, endHPWL1, endHPWL2;
+
+						initCellHPWL2=calculateCellHPWL(tempCell, cellMap,
+							netMap, &freshNetMap);
+						endHPWL1=calculateCellHPWL(newCell, cellBeingSwapped,
+							cellMap, netMap,  &freshNetMap);
+						endHPWL2=calculateCellHPWL(cellBeingSwapped, newCell,
+							cellMap, netMap,  &freshNetMap);
+
+						int result = (initCellHPWL-endHPWL1)+(initCellHPWL2-endHPWL2);
+						if (result > 0) {
+							(*placement).swapCells( cell.getY(), cell.getX(),
+								tempCell.getY(), tempCell.getX() );
+							(*cellMap)[ newCell.getName() ] = newCell;
+							(*cellMap)[ cellBeingSwapped.getName() ] = cellBeingSwapped;
+							if (!freshNetMap.empty()) {
+								for (auto it = freshNetMap.begin();
+										it != freshNetMap.end(); ++it) {
+									(*netMap)[ it->first ] = it->second;
+								}
+							}
+						}
+				 	}
+
+				} else if (x > rightBound) {
+					int newX = x-1;
+					Site site = (*placement).getSite(y, newX);
+					// Cells cannot be placed into invalid sites
+					if ( site.getType() != cell.getType() ) {
+						continue;
+					}
+					string otherCellName = site.getCellName();
+					if ( otherCellName == "" ) { //empty site
+						newCell.setX(newX); newCell.setY(y);
+						int endHPWL = calculateCellHPWL(newCell, cellMap,
+							netMap, &freshNetMap);
+						if (endHPWL < initCellHPWL) {
+							(*placement).swapCells( cell.getY(), cell.getX(),
+								newCell.getY(), newCell.getX() );
+							(*cellMap)[ newCell.getName() ] = newCell;
+							if (!freshNetMap.empty()) {
+								for (auto it = freshNetMap.begin();
+										it != freshNetMap.end(); ++it) {
+									(*netMap)[ it->first ] = it->second;
+								}
+							}
+						}
+					} else { // cell in site
+						Cell cellBeingSwapped = (*cellMap)[otherCellName];
+						Cell tempCell = cellBeingSwapped; // for original of cell to swap
+						newCell.setX(newX); newCell.setY(y);
+						cellBeingSwapped.setX(x); cellBeingSwapped.setY(y);
+
+						int initCellHPWL2, endHPWL1, endHPWL2;
+
+						initCellHPWL2=calculateCellHPWL(tempCell, cellMap,
+							netMap, &freshNetMap);
+						endHPWL1=calculateCellHPWL(newCell, cellBeingSwapped,
+							cellMap, netMap,  &freshNetMap);
+						endHPWL2=calculateCellHPWL(cellBeingSwapped, newCell,
+							cellMap, netMap,  &freshNetMap);
+
+						int result = (initCellHPWL-endHPWL1)+(initCellHPWL2-endHPWL2);
+						if (result > 0) {
+							(*placement).swapCells( cell.getY(), cell.getX(),
+								tempCell.getY(), tempCell.getX() );
+							(*cellMap)[ newCell.getName() ] = newCell;
+							(*cellMap)[ cellBeingSwapped.getName() ] = cellBeingSwapped;
+							if (!freshNetMap.empty()) {
+								for (auto it = freshNetMap.begin();
+										it != freshNetMap.end(); ++it) {
+									(*netMap)[ it->first ] = it->second;
+								}
+							}
+						}
+					}
+				}
 			}
 }
 
@@ -581,7 +693,7 @@ int main (int argc, char* argv[]) {
 
 		// Run Algorithm
 		main_t = clock();
-		int a = 6;
+		int a = 3;
 		cout << "Running VS+GS for " <<a<<" iterations" << endl;
 		for(int i=0; i<a; i++){
 			cout <<"In iteration "<<i <<endl;
