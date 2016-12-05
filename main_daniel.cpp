@@ -522,7 +522,8 @@ void vertical_swap(Placement* placement,
 							}
 						}
 				 	}
-				 }
+				}
+
 			}
 }
 
