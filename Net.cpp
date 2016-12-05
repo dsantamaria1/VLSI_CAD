@@ -2,6 +2,7 @@
 #include <vector>
 #include <iostream>
 #include <unordered_map>
+#include <climits>
 
 #include "Net.h"
 #include "Cell.h"
