@@ -15,7 +15,7 @@
 #include "Parser.h"
 
 using namespace std;
-#define MULTITHREADING 0
+#define STEP 1
 
 struct Solution {
 	int cost;
@@ -401,10 +401,10 @@ void vertical_swap(Placement* placement,
 				std::tie(topBound, bottomBound, leftBound, rightBound, initCellHPWL)
 					= get_optimal_region(cell, cellMap, netMap);
 
-				if(insideOptimalRegion(leftBound, rightBound, topBound,
-					bottomBound, cell)){
-					continue;
-				} 
+				//if(insideOptimalRegion(leftBound, rightBound, topBound,
+				//	bottomBound, cell)){
+				//	continue;
+				//} 
 
 				int x = cell.getX();
 				int y = cell.getY();
@@ -413,7 +413,7 @@ void vertical_swap(Placement* placement,
 				unordered_map<string, Net> freshNetMap;
 
 				if(y < bottomBound){
-					int newY = y+1;
+					int newY = y+STEP;
 					Site site = (*placement).getSite(newY, x);
 					// Cells cannot be placed into invalid sites
 					if ( site.getType() != cell.getType() ) {
@@ -468,7 +468,7 @@ void vertical_swap(Placement* placement,
 				 	}
 
 				} else if (y > topBound){
-					int newY = y-1;
+					int newY = y-STEP;
 					Site site = (*placement).getSite(newY, x);
 					// Cells cannot be placed into invalid sites
 					if ( site.getType() != cell.getType() ) {
@@ -528,7 +528,7 @@ void vertical_swap(Placement* placement,
 				freshNetMap.clear();
 
 				if(x < leftBound){
-					int newX = x+1;
+					int newX = x+STEP;
 					Site site = (*placement).getSite(y, newX);
 					// Cells cannot be placed into invalid sites
 					if ( site.getType() != cell.getType() ) {
@@ -582,7 +582,7 @@ void vertical_swap(Placement* placement,
 				 	}
 
 				} else if (x > rightBound) {
-					int newX = x-1;
+					int newX = x-STEP;
 					Site site = (*placement).getSite(y, newX);
 					// Cells cannot be placed into invalid sites
 					if ( site.getType() != cell.getType() ) {
@@ -698,9 +698,7 @@ int main (int argc, char* argv[]) {
 	main_t = clock();
 	while ( iterImprovement > improvementMargin ) {
 		cout << "In iteration " << i << endl;
-		cout << "Local Swap" << endl;
 		vertical_swap(&placement, &cellMap, &netMap);
-		cout << "Global Swap" << endl;
 		global_swap_algorithm(&placement, &cellMap, &netMap);
 
 		int currHPWL = calculateTotalHPWL(&cellMap, &netMap);
@@ -708,7 +706,14 @@ int main (int argc, char* argv[]) {
 		cout << "HPWL Improvement: " << iterImprovement << "%" << "\n" << "\n";
 		prevHPWL = currHPWL;
 		i++;
+		if(i==10){
+			cout <<"breaking" << endl;
+			break;
+		}
 	}
+        div_t algoTime = div ( (clock() - main_t) / (double) CLOCKS_PER_SEC, 60);
+        cout << "\n" << "Current Global Swap Algorithm Time: ";
+        cout << algoTime.quot << " minutes, " << algoTime.rem << " seconds\n\n";
 
 	// Check Placement Validity
 	placement.checkValidity( &cellMap );
@@ -727,6 +732,8 @@ int main (int argc, char* argv[]) {
 		cout << "setHPWL: " << setHPWL << endl;
 		cout << "calcHPWL: " << calcHPWL << endl;
 	}
+        filename += "_new.pl";
+        placement.printPlacement(filename,&cellMap);
 
 	// Check Total HPWL	after algorithm
 	int endHPWL = calculateTotalHPWL(&cellMap, &netMap);
