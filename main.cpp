@@ -13,6 +13,8 @@
 #include "Site.h"
 #include "Placement.h"
 #include "Parser.h"
+#include "linear_placement.h"
+#include "optimal_interleaving.h"
 
 using namespace std;
 #define STEP 1
